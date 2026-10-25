@@ -251,7 +251,7 @@ async function main() {
       where: { id: existing.id },
       data: {
         ...b,
-        downloadUrl: `http://localhost:3000/api/v1/catalog/${existing.id}/download`,
+        downloadUrl: `/api/v1/catalog/${existing.id}/download`,
       },
     });
   }
