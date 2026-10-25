@@ -1,0 +1,212 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum CommunityRole {
+  creator
+  admin
+  member
+}
+
+enum CommunityMemberStatus {
+  active
+  restricted
+  banned
+}
+
+enum DiscussionScope {
+  passage
+  chapter
+  book
+  topic
+  subtopic
+}
+
+enum LiveReadingAccessMode {
+  allMembers
+  adminsOnly
+  custom
+}
+
+model User {
+  id           String            @id @default(uuid())
+  email        String            @unique
+  username     String            @unique
+  passwordHash String?
+  displayName  String
+  avatarUrl    String?
+  googleId     String?           @unique
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  memberships  CommunityMember[]
+  createdComms Community[]       @relation("CommunityCreator")
+  discussions  Discussion[]
+  messages     ChatMessage[]
+  hostedLives  LiveReadingSession[]
+  progresses   ReadingProgress[]
+  quotes       QuoteRating[]
+
+  @@map("users")
+}
+
+model Community {
+  id          String            @id @default(uuid())
+  name        String
+  description String
+  bookId      String            // Reference book id or fingerprint
+  creatorId   String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  creator     User              @relation("CommunityCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  members     CommunityMember[]
+  discussions Discussion[]
+  liveSessions LiveReadingSession[]
+
+  @@map("communities")
+}
+
+model CommunityMember {
+  id                String                @id @default(uuid())
+  communityId       String
+  userId            String
+  role              CommunityRole         @default(member)
+  status            CommunityMemberStatus @default(active)
+  customPermissions String[]              @default([])
+  joinedAt          DateTime              @default(now())
+  restrictionReason String?
+  restrictedAt      DateTime?
+
+  community         Community             @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, userId])
+  @@map("community_members")
+}
+
+model Discussion {
+  id            String          @id @default(uuid())
+  highlightId   String          // CFI or passage anchor
+  bookId        String
+  communityId   String?
+  userId        String
+  title         String
+  content       String
+  scope         DiscussionScope @default(passage)
+  chapterTitle  String?
+  chapterIndex  Int?
+  quoteText     String?
+  rating        Float?
+  upvotes       Int             @default(0)
+  parentTopicId String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community     Community?      @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  messages      ChatMessage[]
+
+  @@map("discussions")
+}
+
+model ChatMessage {
+  id             String      @id @default(uuid())
+  threadId       String
+  userId         String
+  content        String
+  replyToId      String?
+  replyToContent String?
+  replyToAuthor  String?
+  isSpoiler      Boolean     @default(false)
+  quoteText      String?
+  chapterTitle   String?
+  chapterIndex   Int?
+  cfi            String?
+  reactions      Json        @default("{}") // emoji -> list of userIds
+  createdAt      DateTime    @default(now())
+
+  discussion     Discussion  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model LiveReadingSession {
+  id                 String                @id @default(uuid())
+  communityId        String
+  bookId             String
+  title              String
+  hostId             String
+  currentCfi         String?
+  chapterTitle       String?
+  chapterIndex       Int?
+  isActive           Boolean               @default(true)
+  startedAt          DateTime              @default(now())
+  endedAt            DateTime?
+  accessMode         LiveReadingAccessMode @default(allMembers)
+  allowedUserIds     String[]              @default([])
+  commenterUserIds   String[]              @default([])
+  participantUserIds String[]              @default([])
+
+  community          Community             @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  host               User                  @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@map("live_reading_sessions")
+}
+
+model CatalogBook {
+  id                 String    @id @default(uuid())
+  title              String
+  author             String
+  coverUrl           String?
+  description        String?
+  downloadUrl        String?
+  sourceUrl          String?
+  genres             String[]  @default([])
+  rating             Float?
+  activeReadersCount Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([title])
+  @@index([author])
+  @@map("catalog_books")
+}
+
+model ReadingProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  bookId      String
+  cfi         String
+  progression Float
+  updatedAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@map("reading_progresses")
+}
+
+model QuoteRating {
+  id              String   @id @default(uuid())
+  userId          String
+  bookId          String
+  bookTitle       String
+  chapterTitle    String?
+  quoteText       String
+  authorName      String
+  addedByUsername String
+  upvotes         Int      @default(0)
+  averageRating   Float    @default(5.0)
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("quote_ratings")
+}
