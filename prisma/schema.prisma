@@ -59,9 +59,12 @@ model Community {
   id          String            @id @default(uuid())
   name        String
   description String
-  bookId      String            // Reference book id or fingerprint
-  creatorId   String
-  createdAt   DateTime          @default(now())
+  bookId               String            // Reference book id or fingerprint
+  creatorId            String
+  canonicalFingerprint String?
+  editionTitle         String?
+  downloadUrl          String?
+  createdAt            DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
   creator     User              @relation("CommunityCreator", fields: [creatorId], references: [id], onDelete: Cascade)

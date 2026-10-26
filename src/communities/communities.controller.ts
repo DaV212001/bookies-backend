@@ -23,6 +23,16 @@ export class CommunitiesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Put(':id/calibrate-edition')
+  async calibrateEdition(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() body: { canonicalFingerprint: string; editionTitle?: string; downloadUrl?: string },
+  ) {
+    return this.communitiesService.calibrateFingerprint(id, req.user.id, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post(':id/join')
   async join(@Param('id') id: string, @Req() req: any) {
     return this.communitiesService.join(id, req.user.id);

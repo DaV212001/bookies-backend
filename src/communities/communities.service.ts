@@ -35,13 +35,24 @@ export class CommunitiesService {
     return community;
   }
 
-  async create(userId: string, dto: { name: string; description: string; bookId: string; importMembersFromCommunityId?: string }) {
+  async create(userId: string, dto: {
+    name: string;
+    description: string;
+    bookId: string;
+    canonicalFingerprint?: string;
+    editionTitle?: string;
+    downloadUrl?: string;
+    importMembersFromCommunityId?: string;
+  }) {
     const community = await this.prisma.community.create({
       data: {
         name: dto.name,
         description: dto.description,
         bookId: dto.bookId,
         creatorId: userId,
+        canonicalFingerprint: dto.canonicalFingerprint,
+        editionTitle: dto.editionTitle,
+        downloadUrl: dto.downloadUrl,
         members: {
           create: {
             userId: userId,
@@ -75,6 +86,27 @@ export class CommunitiesService {
     }
 
     return this.findOne(community.id);
+  }
+
+  async calibrateFingerprint(
+    communityId: string,
+    userId: string,
+    dto: { canonicalFingerprint: string; editionTitle?: string; downloadUrl?: string },
+  ) {
+    const community = await this.prisma.community.findUnique({ where: { id: communityId } });
+    if (!community) throw new NotFoundException('Community not found');
+    if (community.creatorId !== userId) {
+      throw new ForbiddenException('Only community creator can calibrate edition fingerprint');
+    }
+    await this.prisma.community.update({
+      where: { id: communityId },
+      data: {
+        canonicalFingerprint: dto.canonicalFingerprint,
+        editionTitle: dto.editionTitle ?? community.editionTitle,
+        downloadUrl: dto.downloadUrl ?? community.downloadUrl,
+      },
+    });
+    return this.findOne(communityId);
   }
 
   async join(communityId: string, userId: string) {
