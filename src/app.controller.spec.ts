@@ -64,4 +64,14 @@ describe('AppController', () => {
       expect(html).not.toContain('/health');
     });
   });
+
+  describe('getTermsPage', () => {
+    it('should return HTML terms of service page with contact disclosures', () => {
+      const html = controller.getTermsPage();
+      expect(html).toContain('Terms of Service');
+      expect(html).toContain('<!DOCTYPE html>');
+      expect(html).toContain('bookies.support@gmail.com');
+      expect(html).not.toContain('/health');
+    });
+  });
 });

@@ -17,7 +17,6 @@ export class AppController {
     let latencyMs = 0;
 
     try {
-      // Lightweight query touching Supabase/Postgres to keep the instance unpaused
       await this.prisma.$queryRawUnsafe('SELECT 1');
       latencyMs = Date.now() - startTime;
     } catch (err: any) {
@@ -41,7 +40,7 @@ export class AppController {
   }
 
   /**
-   * Public landing page for Bookies — a social EPUB reader & book club community.
+   * Public landing page for Bookies.
    */
   @Get(['', 'home'])
   @Header('Content-Type', 'text/html; charset=utf-8')
@@ -51,61 +50,52 @@ export class AppController {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bookies — Social Reading & Book Clubs</title>
-  <meta name="description" content="Bookies connects readers through synchronized timelines, in-margin passage discussions, quote cards, and quiet co-presence for book clubs.">
+  <title>Bookies: Social Reading and Book Clubs</title>
+  <meta name="description" content="Bookies connects readers through synchronized timelines, in-margin passage discussions, quote cards, and shared reading for book clubs.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --canvas: #FAF7F2;
-      --canvas-surface: #FFFFFF;
-      --canvas-muted: #F4EFEB;
-      --canvas-subtle: #EDE7DE;
-      --ink: #201A16;
-      --ink-muted: #665851;
-      --ink-faint: #9E9189;
-      --terracotta: #8B3A2B;
-      --terracotta-hover: #712B1E;
-      --terracotta-soft: #F9EBE8;
-      --amber: #D97706;
-      --amber-soft: #FEF3C7;
-      --sage: #4A6B5B;
-      --sage-soft: #EAF2ED;
-      --border: #E5DFD5;
-      --border-strong: #D5CCC0;
+      --canvas: #FBF9F5;
+      --surface: #FFFFFF;
+      --surface-subtle: #F3EFE9;
+      --ink: #1F1B18;
+      --ink-secondary: #5C524B;
+      --ink-tertiary: #8C8077;
+      --border: #E4DCD3;
+      --border-focus: #1F1B18;
+      --accent: #8F3926;
+      --accent-hover: #722B1B;
+      --radius: 6px;
       --font-serif: 'Newsreader', Georgia, serif;
       --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      --shadow-sm: 0 2px 6px -1px rgba(36, 26, 22, 0.05);
-      --shadow-md: 0 10px 24px -4px rgba(36, 26, 22, 0.08), 0 2px 6px -1px rgba(36, 26, 22, 0.04);
-      --shadow-lg: 0 20px 36px -6px rgba(36, 26, 22, 0.12), 0 4px 12px -2px rgba(36, 26, 22, 0.05);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       background-color: var(--canvas);
       color: var(--ink);
       font-family: var(--font-sans);
+      font-size: 16px;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
     }
 
-    /* Top Navigation */
+    /* Navigation */
     header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(250, 247, 242, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background-color: var(--canvas);
       border-bottom: 1px solid var(--border);
     }
     .header-inner {
-      max-width: 1200px;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 1.1rem 2rem;
+      padding: 16px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -113,1206 +103,786 @@ export class AppController {
     .brand {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
+      gap: 10px;
       text-decoration: none;
       color: var(--ink);
     }
     .brand-mark {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: linear-gradient(145deg, #8B3A2B, #A84936);
+      width: 28px;
+      height: 28px;
+      background-color: var(--accent);
+      border-radius: var(--radius);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #FFFFFF;
-      box-shadow: 0 4px 10px rgba(139, 58, 43, 0.25);
-    }
-    .brand-mark svg {
-      width: 22px;
-      height: 22px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 16px;
     }
     .brand-name {
       font-family: var(--font-serif);
-      font-size: 1.6rem;
+      font-size: 22px;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
     }
     nav {
       display: flex;
       align-items: center;
-      gap: 2rem;
+      gap: 24px;
     }
     nav a {
-      color: var(--ink-muted);
+      color: var(--ink-secondary);
       text-decoration: none;
-      font-size: 0.95rem;
+      font-size: 14px;
       font-weight: 500;
       transition: color 0.15s ease;
     }
-    nav a:hover { color: var(--terracotta); }
-    .nav-btn {
-      padding: 0.6rem 1.25rem;
-      border-radius: 8px;
-      background-color: var(--terracotta);
+    nav a:hover {
+      color: var(--accent);
+    }
+    .nav-cta {
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      background-color: var(--accent);
       color: #FFFFFF !important;
       font-weight: 600;
-      transition: background-color 0.15s ease, transform 0.15s ease;
-      box-shadow: var(--shadow-sm);
+      transition: background-color 0.15s ease;
     }
-    .nav-btn:hover {
-      background-color: var(--terracotta-hover);
-      transform: translateY(-1px);
+    .nav-cta:hover {
+      background-color: var(--accent-hover);
     }
 
-    /* Hero Section */
-    .hero {
-      max-width: 1100px;
+    /* Main container */
+    main {
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 5rem 1.5rem 3.5rem;
+      padding: 64px 24px 96px;
+    }
+
+    /* Hero section */
+    .hero {
+      max-width: 780px;
+      margin: 0 auto 64px;
       text-align: center;
     }
-    .pill-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 1rem;
-      border-radius: 9999px;
-      background: var(--terracotta-soft);
-      color: var(--terracotta);
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 1.75rem;
-      border: 1px solid rgba(139, 58, 43, 0.2);
-    }
-    h1 {
+    .hero h1 {
       font-family: var(--font-serif);
-      font-size: clamp(2.6rem, 5.5vw, 4.4rem);
+      font-size: clamp(32px, 5vw, 48px);
       font-weight: 600;
-      line-height: 1.15;
-      letter-spacing: -0.03em;
-      margin-bottom: 1.5rem;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
       color: var(--ink);
     }
-    h1 em {
-      font-style: italic;
-      color: var(--terracotta);
-      font-weight: 500;
-    }
-    .hero-lead {
-      font-size: clamp(1.1rem, 2vw, 1.3rem);
-      color: var(--ink-muted);
-      max-width: 720px;
-      margin: 0 auto 2.5rem;
-      font-weight: 400;
+    .hero-summary {
+      font-size: 18px;
       line-height: 1.6;
+      color: var(--ink-secondary);
+      margin-bottom: 32px;
     }
-    .cta-cluster {
+    .cta-row {
       display: flex;
       justify-content: center;
-      align-items: center;
-      gap: 1.25rem;
+      gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 3.5rem;
     }
     .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.65rem;
-      padding: 0.9rem 1.85rem;
-      border-radius: 9px;
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-size: 15px;
       font-weight: 600;
-      font-size: 1rem;
       text-decoration: none;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
       cursor: pointer;
+      border: 1px solid transparent;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
     .btn-primary {
-      background-color: var(--terracotta);
+      background-color: var(--accent);
       color: #FFFFFF;
-      box-shadow: 0 4px 14px rgba(139, 58, 43, 0.28);
+      border-color: var(--accent);
     }
     .btn-primary:hover {
-      background-color: var(--terracotta-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(139, 58, 43, 0.35);
+      background-color: var(--accent-hover);
+      border-color: var(--accent-hover);
     }
     .btn-secondary {
-      background-color: var(--canvas-surface);
+      background-color: var(--surface);
       color: var(--ink);
-      border: 1px solid var(--border-strong);
-      box-shadow: var(--shadow-sm);
+      border-color: var(--border);
     }
     .btn-secondary:hover {
-      border-color: var(--terracotta);
-      color: var(--terracotta);
-      transform: translateY(-2px);
+      border-color: var(--border-focus);
     }
 
-    /* Social Proof Strip */
-    .proof-strip {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 3.5rem;
-      padding: 1.75rem 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-    .proof-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .proof-num {
-      font-family: var(--font-serif);
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--terracotta);
-      line-height: 1.1;
-    }
-    .proof-label {
-      font-size: 0.82rem;
-      color: var(--ink-faint);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-top: 0.25rem;
-    }
-
-    /* Live Product Preview Frame (Flutter Code in HTML) */
-    .showcase-section {
-      max-width: 1160px;
-      margin: 4.5rem auto 6rem;
-      padding: 0 1.5rem;
-    }
-    .reader-stage {
-      background: var(--canvas-surface);
+    /* Live reader mockup: Two columns representing tablet view */
+    .reader-mockup {
       border: 1px solid var(--border);
-      border-radius: 20px;
-      box-shadow: var(--shadow-lg);
-      overflow: hidden;
+      border-radius: var(--radius);
+      background-color: var(--surface);
       display: grid;
       grid-template-columns: 1.25fr 1fr;
+      margin-bottom: 80px;
     }
-    @media (max-width: 900px) {
-      .reader-stage { grid-template-columns: 1fr; }
+    @media (max-width: 860px) {
+      .reader-mockup {
+        grid-template-columns: 1fr;
+      }
     }
 
-    /* Left pane: The Reading Well */
-    .reading-well {
-      padding: 2.75rem 3rem 2.25rem;
-      background-color: #FCFAF6;
+    /* Left pane: Reading surface */
+    .reader-text-pane {
+      padding: 40px;
       border-right: 1px solid var(--border);
-      position: relative;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .reader-header {
+    @media (max-width: 860px) {
+      .reader-text-pane {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+    }
+    .reader-meta-bar {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding-bottom: 1.25rem;
-      margin-bottom: 1.75rem;
+      font-size: 13px;
+      color: var(--ink-tertiary);
+      margin-bottom: 24px;
+      padding-bottom: 12px;
       border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-      color: var(--ink-faint);
-      font-weight: 500;
     }
-    .book-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .book-meta strong {
-      color: var(--ink);
+    .reader-chapter-title {
       font-family: var(--font-serif);
-      font-size: 1rem;
-    }
-    .reading-content {
-      font-family: var(--font-serif);
-      font-size: 1.18rem;
-      line-height: 1.85;
-      color: #2D2520;
-    }
-    .reading-content p {
-      margin-bottom: 1.25rem;
-      text-align: justify;
-    }
-    .chapter-heading {
-      font-family: var(--font-serif);
-      font-size: 1.6rem;
+      font-size: 20px;
       font-weight: 600;
-      margin-bottom: 1.5rem;
       color: var(--ink);
-      letter-spacing: -0.01em;
+      margin-bottom: 20px;
     }
-
-    /* Highlighted sentence with Bookies Theme Colors */
-    .bookies-highlight {
-      background: #FFE8DC;
-      border-bottom: 2px solid var(--terracotta);
+    .book-passage {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      line-height: 1.8;
+      color: var(--ink);
+    }
+    .book-passage p {
+      margin-bottom: 16px;
+    }
+    .highlighted-text {
+      background-color: #F8E6DE;
       padding: 2px 4px;
-      border-radius: 3px;
-      position: relative;
-      cursor: pointer;
+      border-radius: 2px;
     }
-
-    /* Passage Selection Context Menu (Converted from Flutter) */
-    .context-menu-popover {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.4rem 0.6rem;
-      border-radius: 9999px;
-      background: var(--ink);
-      color: #FFFFFF;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-      position: absolute;
-      top: 158px;
-      left: 120px;
-      z-index: 10;
-      transform: translateY(-100%);
-      font-family: var(--font-sans);
-      font-size: 0.78rem;
+    .reader-action-toolbar {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .toolbar-chip {
+      padding: 6px 12px;
+      font-size: 12px;
       font-weight: 600;
-    }
-    .context-menu-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.3rem 0.65rem;
-      border-radius: 9999px;
-      background: transparent;
+      border-radius: var(--radius);
+      background-color: var(--ink);
       color: #FFFFFF;
       border: none;
       cursor: pointer;
-      transition: background 0.15s;
     }
-    .context-menu-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
-    .context-menu-btn.active {
-      background: var(--terracotta);
-      color: #FFFFFF;
+    .toolbar-chip.secondary {
+      background-color: var(--surface-subtle);
+      color: var(--ink);
+      border: 1px solid var(--border);
     }
 
-    /* Ambient Progress Bar (Converted from Flutter AmbientProgressBar) */
-    .ambient-bar-container {
-      margin-top: 2rem;
-      padding-top: 1rem;
+    /* Bottom scrubber track */
+    .scrubber-module {
+      margin-top: 32px;
+      padding-top: 16px;
       border-top: 1px solid var(--border);
     }
-    .ambient-bar-label {
+    .scrubber-header {
       display: flex;
       justify-content: space-between;
-      font-size: 0.78rem;
-      color: var(--ink-faint);
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-size: 12px;
+      color: var(--ink-secondary);
+      margin-bottom: 8px;
+      font-weight: 500;
     }
-    .ambient-track {
+    .scrubber-line {
       position: relative;
-      height: 6px;
-      background: #E8E0D5;
-      border-radius: 9999px;
-      margin-bottom: 0.75rem;
+      height: 4px;
+      background-color: var(--border);
+      border-radius: 2px;
+      margin-bottom: 8px;
     }
-    .ambient-fill {
+    .scrubber-progress {
       position: absolute;
       left: 0;
       top: 0;
       bottom: 0;
-      width: 64%;
-      background: var(--terracotta);
-      border-radius: 9999px;
+      width: 62%;
+      background-color: var(--accent);
+      border-radius: 2px;
     }
-    .participant-pin {
+    .scrubber-pin {
       position: absolute;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 2px solid #FFFFFF;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      width: 18px;
+      height: 18px;
+      border-radius: var(--radius);
+      background-color: var(--ink);
+      border: 2px solid var(--surface);
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: #FFFFFF;
-      cursor: pointer;
     }
-    .pin-marcus { left: 34%; background: #2563EB; }
-    .pin-elena { left: 52%; background: #D97706; }
-    .pin-you { left: 64%; background: var(--terracotta); outline: 2px solid var(--terracotta); outline-offset: 1px; }
-    .pin-priya { left: 88%; background: #059669; }
+    .pin-a { left: 32%; }
+    .pin-b { left: 50%; }
+    .pin-user { left: 62%; background-color: var(--accent); }
+    .pin-c { left: 84%; }
 
-    /* Right pane: Marginalia & Community Thread (Converted from Flutter MarginaliaCard) */
-    .marginalia-panel {
-      padding: 2.5rem;
-      background: var(--canvas-surface);
+    /* Right pane: Margin discussion */
+    .reader-margin-pane {
+      padding: 32px;
+      background-color: var(--surface);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .thread-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.5rem;
+    .margin-header {
+      margin-bottom: 20px;
     }
-    .thread-title {
+    .margin-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+    .margin-title {
       font-family: var(--font-serif);
-      font-size: 1.35rem;
+      font-size: 18px;
       font-weight: 600;
       color: var(--ink);
-      line-height: 1.25;
     }
-    .badge-live {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.25rem 0.65rem;
-      border-radius: 9999px;
-      background: #ECFDF5;
-      color: #047857;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-    .live-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #10B981;
-      animation: pulse-dot 2s infinite;
-    }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
-
-    /* Selected passage quote block */
-    .quote-anchor {
-      padding: 0.9rem 1.15rem;
-      background: var(--canvas-muted);
-      border-left: 3px solid var(--terracotta);
-      border-radius: 0 8px 8px 0;
+    .selected-quote-callout {
+      padding: 12px 16px;
+      background-color: var(--surface-subtle);
+      border-radius: var(--radius);
       font-family: var(--font-serif);
-      font-style: italic;
-      font-size: 0.95rem;
-      color: var(--ink);
-      margin-bottom: 1.5rem;
-      line-height: 1.55;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--ink-secondary);
+      margin-bottom: 24px;
     }
-
-    /* Comment list */
-    .comments-stream {
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-      flex: 1;
-    }
-    .comment-card {
-      display: flex;
-      gap: 0.85rem;
-    }
-    .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: #FFFFFF;
-      flex-shrink: 0;
-    }
-    .av-elena { background: #D97706; }
-    .av-marcus { background: #2563EB; }
-    .av-priya { background: #059669; }
-    .comment-body {
-      background: var(--canvas-muted);
-      padding: 0.85rem 1.1rem;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      flex: 1;
+    .thread-entry {
       border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
     }
-    .comment-meta {
+    .entry-author {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
       display: flex;
       justify-content: space-between;
-      margin-bottom: 0.35rem;
-      font-size: 0.78rem;
+      margin-bottom: 6px;
     }
-    .comment-author {
-      font-weight: 700;
-      color: var(--ink);
+    .entry-time {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--ink-tertiary);
     }
-    .comment-time {
-      color: var(--ink-faint);
-    }
-    .comment-text {
-      color: #382F2A;
+    .entry-body {
+      font-size: 14px;
       line-height: 1.5;
+      color: var(--ink-secondary);
     }
-
-    /* Reactions strip */
-    .reactions-bar {
+    .entry-meta {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--ink-tertiary);
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 0.6rem;
+      gap: 12px;
     }
-    .reaction-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      padding: 0.2rem 0.55rem;
-      border-radius: 9999px;
-      background: var(--canvas-surface);
-      border: 1px solid var(--border);
-      font-size: 0.75rem;
-      color: var(--ink-muted);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .reaction-pill:hover {
-      border-color: var(--terracotta);
-      color: var(--terracotta);
-    }
-
-    /* Input area */
-    .reply-box {
-      margin-top: 1.5rem;
-      padding-top: 1.25rem;
+    .reply-form {
+      display: flex;
+      gap: 8px;
+      margin-top: 24px;
+      padding-top: 16px;
       border-top: 1px solid var(--border);
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
     }
     .reply-input {
       flex: 1;
-      padding: 0.75rem 1rem;
-      border-radius: 9px;
-      border: 1px solid var(--border-strong);
-      background: var(--canvas-muted);
-      font-family: var(--font-sans);
-      font-size: 0.9rem;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background-color: var(--surface-subtle);
       color: var(--ink);
       outline: none;
     }
     .reply-input:focus {
-      border-color: var(--terracotta);
-      background: #FFFFFF;
+      border-color: var(--border-focus);
+      background-color: var(--surface);
     }
-    .reply-btn {
-      padding: 0.75rem 1.25rem;
-      border-radius: 9px;
-      background: var(--terracotta);
+    .reply-submit {
+      padding: 10px 18px;
+      border-radius: var(--radius);
+      background-color: var(--accent);
       color: #FFFFFF;
       border: none;
+      font-size: 13px;
       font-weight: 600;
-      font-size: 0.85rem;
       cursor: pointer;
     }
 
-    /* Editorial Pillars Section */
-    .section-title {
-      text-align: center;
-      max-width: 720px;
-      margin: 0 auto 3.5rem;
-    }
-    .section-tag {
-      font-size: 0.82rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--terracotta);
-      margin-bottom: 0.75rem;
-    }
-    .section-title h2 {
-      font-family: var(--font-serif);
-      font-size: clamp(2rem, 3.8vw, 3rem);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
-      color: var(--ink);
-      margin-bottom: 1rem;
-    }
-    .section-title p {
-      font-size: 1.1rem;
-      color: var(--ink-muted);
-      line-height: 1.6;
-    }
-
-    .pillars-grid {
-      max-width: 1160px;
-      margin: 0 auto 6rem;
-      padding: 0 1.5rem;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2.25rem;
-    }
-    @media (max-width: 820px) {
-      .pillars-grid { grid-template-columns: 1fr; }
-    }
-    .pillar-card {
-      background: var(--canvas-surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.5rem;
-      box-shadow: var(--shadow-sm);
+    /* Feature sections: direct two-column layout */
+    .feature-list {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s;
+      gap: 64px;
+      margin-bottom: 96px;
     }
-    .pillar-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-md);
-      border-color: var(--border-strong);
-    }
-    .pillar-card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: 4px;
-      background: var(--terracotta);
-    }
-    .pillar-num {
-      font-family: var(--font-serif);
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--terracotta);
-      margin-bottom: 0.75rem;
-    }
-    .pillar-heading {
-      font-family: var(--font-serif);
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      color: var(--ink);
-    }
-    .pillar-desc {
-      color: var(--ink-muted);
-      font-size: 0.98rem;
-      line-height: 1.6;
-      margin-bottom: 1.5rem;
-    }
-    .pillar-micro-ui {
-      background: var(--canvas-muted);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.1rem 1.25rem;
-      font-size: 0.88rem;
-    }
-
-    /* Spoiler Shielding Preview */
-    .spoiler-curtain {
-      background: linear-gradient(180deg, #F9F5EE 0%, #ECE4D6 100%);
-      border: 1px dashed var(--border-strong);
-      border-radius: 10px;
-      padding: 1.25rem;
-      text-align: center;
-      color: var(--ink-muted);
-    }
-    .spoiler-curtain strong {
-      display: block;
-      color: var(--ink);
-      font-family: var(--font-serif);
-      font-size: 1.05rem;
-      margin-bottom: 0.35rem;
-    }
-
-    /* Active Book Clubs Strip */
-    .clubs-section {
-      background: var(--canvas-muted);
+    .feature-row {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 48px;
+      align-items: start;
       border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 5rem 1.5rem;
+      padding-top: 32px;
     }
-    .clubs-container {
-      max-width: 1160px;
-      margin: 0 auto;
+    @media (max-width: 768px) {
+      .feature-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
     }
-    .clubs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.75rem;
-      margin-top: 3rem;
-    }
-    .club-card {
-      background: var(--canvas-surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.75rem;
-      box-shadow: var(--shadow-sm);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .club-badge {
-      display: inline-block;
-      align-self: flex-start;
-      padding: 0.25rem 0.65rem;
-      border-radius: 9999px;
-      background: var(--sage-soft);
-      color: var(--sage);
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 1rem;
-    }
-    .club-title {
+    .feature-heading {
       font-family: var(--font-serif);
-      font-size: 1.35rem;
+      font-size: 24px;
       font-weight: 600;
       color: var(--ink);
-      margin-bottom: 0.35rem;
+      line-height: 1.3;
+    }
+    .feature-description {
+      font-size: 16px;
+      color: var(--ink-secondary);
+      line-height: 1.7;
+    }
+    .feature-spec {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: var(--radius);
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    /* Reading clubs section */
+    .clubs-section {
+      border-top: 1px solid var(--border);
+      padding-top: 64px;
+      margin-bottom: 96px;
+    }
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--ink);
+    }
+    .section-lead {
+      font-size: 16px;
+      color: var(--ink-secondary);
+      margin-bottom: 32px;
+    }
+    .clubs-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background-color: var(--surface);
+      font-size: 14px;
+    }
+    .clubs-table th {
+      text-align: left;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink-tertiary);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .clubs-table td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink);
+    }
+    .clubs-table tr:last-child td {
+      border-bottom: none;
+    }
+    .club-name {
+      font-weight: 600;
+      color: var(--ink);
     }
     .club-book {
-      font-size: 0.92rem;
-      color: var(--terracotta);
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-    .club-target {
-      font-size: 0.85rem;
-      color: var(--ink-muted);
-      padding: 0.65rem 0.85rem;
-      background: var(--canvas);
-      border-radius: 8px;
-      margin-bottom: 1.25rem;
-      border: 1px solid var(--border);
-    }
-    .club-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.82rem;
-      color: var(--ink-faint);
-      font-weight: 500;
+      color: var(--ink-secondary);
+      font-family: var(--font-serif);
+      font-size: 15px;
     }
 
-    /* FAQ Section */
+    /* FAQ section */
     .faq-section {
-      max-width: 860px;
-      margin: 5rem auto;
-      padding: 0 1.5rem;
+      border-top: 1px solid var(--border);
+      padding-top: 64px;
+      margin-bottom: 96px;
     }
-    .faq-item {
-      border-bottom: 1px solid var(--border);
-      padding: 1.75rem 0;
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+      margin-top: 32px;
     }
-    .faq-question {
+    @media (max-width: 768px) {
+      .faq-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .faq-item h3 {
       font-family: var(--font-serif);
-      font-size: 1.25rem;
+      font-size: 18px;
       font-weight: 600;
+      margin-bottom: 8px;
       color: var(--ink);
-      margin-bottom: 0.65rem;
     }
-    .faq-answer {
-      color: var(--ink-muted);
-      font-size: 0.98rem;
-      line-height: 1.65;
+    .faq-item p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink-secondary);
     }
 
-    /* Final CTA Card */
-    .final-cta {
-      max-width: 1040px;
-      margin: 0 auto 6rem;
-      padding: 4rem 2rem;
-      background: linear-gradient(145deg, #201A16 0%, #382A22 100%);
-      color: #FFFFFF;
-      border-radius: 20px;
+    /* Download Banner */
+    .download-banner {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 32px;
       text-align: center;
-      box-shadow: var(--shadow-lg);
+      margin-bottom: 64px;
     }
-    .final-cta h2 {
+    .download-banner h2 {
       font-family: var(--font-serif);
-      font-size: clamp(2rem, 4vw, 3rem);
+      font-size: 28px;
       font-weight: 600;
-      margin-bottom: 1rem;
+      margin-bottom: 12px;
+      color: var(--ink);
     }
-    .final-cta p {
-      color: #DDD4CE;
-      max-width: 620px;
-      margin: 0 auto 2.5rem;
-      font-size: 1.1rem;
-      line-height: 1.6;
+    .download-banner p {
+      font-size: 16px;
+      color: var(--ink-secondary);
+      margin-bottom: 24px;
     }
 
     /* Footer */
     footer {
-      background: var(--canvas-muted);
       border-top: 1px solid var(--border);
-      padding: 3.5rem 1.5rem 2.5rem;
+      background-color: var(--surface-subtle);
+      padding: 40px 24px;
+      font-size: 13px;
+      color: var(--ink-secondary);
     }
     .footer-inner {
-      max-width: 1160px;
+      max-width: 1120px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 2rem;
+      align-items: center;
       flex-wrap: wrap;
-    }
-    .footer-col-brand {
-      max-width: 320px;
-    }
-    .footer-brand {
-      font-family: var(--font-serif);
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--ink);
-      margin-bottom: 0.5rem;
-    }
-    .footer-tagline {
-      font-size: 0.88rem;
-      color: var(--ink-muted);
-      line-height: 1.5;
+      gap: 16px;
     }
     .footer-links {
       display: flex;
-      gap: 3rem;
-      flex-wrap: wrap;
+      gap: 20px;
     }
-    .footer-link-group h4 {
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--ink);
-      margin-bottom: 1rem;
-    }
-    .footer-link-group a {
-      display: block;
-      color: var(--ink-muted);
-      text-decoration: none;
-      font-size: 0.9rem;
-      margin-bottom: 0.65rem;
-      transition: color 0.15s;
-    }
-    .footer-link-group a:hover { color: var(--terracotta); }
-    .footer-bottom {
-      max-width: 1160px;
-      margin: 2.5rem auto 0;
-      padding-top: 1.75rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.85rem;
-      color: var(--ink-faint);
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .footer-bottom a {
-      color: var(--ink-muted);
+    .footer-links a {
+      color: var(--ink-secondary);
       text-decoration: none;
     }
-    .footer-bottom a:hover { text-decoration: underline; }
+    .footer-links a:hover {
+      color: var(--accent);
+    }
   </style>
 </head>
 <body>
-  <!-- Header -->
   <header>
     <div class="header-inner">
       <a href="/home" class="brand">
-        <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
-        </div>
+        <div class="brand-mark">B</div>
         <div class="brand-name">Bookies</div>
       </a>
       <nav>
-        <a href="#reader">The Reader</a>
-        <a href="#how-it-works">How It Works</a>
+        <a href="#reader">Reader</a>
+        <a href="#features">Features</a>
         <a href="#clubs">Clubs</a>
         <a href="/privacy">Privacy</a>
-        <a href="#download" class="nav-btn">Get App</a>
+        <a href="/terms">Terms</a>
+        <a href="#download" class="nav-cta">Download</a>
       </nav>
     </div>
   </header>
 
-  <!-- Hero Section -->
   <main>
     <section class="hero">
-      <div class="pill-badge">An Independent Reading Sanctuary</div>
-      <h1>Where every margin holds a <em>conversation</em>.</h1>
-      <p class="hero-lead">
-        Bookies brings readers together. Synchronized reading timelines, in-margin passage discussions, and ambient co-presence — bringing the warmth of shared physical reading to your digital library.
+      <h1>A shared reading application for book clubs and margin discussions</h1>
+      <p class="hero-summary">
+        Bookies connects readers through synchronized timelines, in-margin passage discussions, and live co-presence inside standard EPUB texts.
       </p>
+      <div class="cta-row">
+        <a href="#download" class="btn btn-primary">Download for Android</a>
+        <a href="#download" class="btn btn-secondary">Download for iOS</a>
+      </div>
+    </section>
 
-      <div class="cta-cluster">
-        <a href="#download" class="btn btn-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download for Mobile
-        </a>
-        <a href="#reader" class="btn btn-secondary">
-          Explore the Reader &darr;
-        </a>
+    <!-- Tablet reader preview -->
+    <section id="reader" class="reader-mockup">
+      <div class="reader-text-pane">
+        <div>
+          <div class="reader-meta-bar">
+            <span>Dune by Frank Herbert</span>
+            <span>Chapter 4, Page 84</span>
+          </div>
+
+          <div class="reader-chapter-title">The Litany Against Fear</div>
+
+          <div class="book-passage">
+            <p>
+              The room grew quiet as the gom jabbar remained steady at his neck. Paul remembered the old proverb whispered in the deep stone halls of Castle Caladan.
+            </p>
+            <p>
+              <span class="highlighted-text">I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration. I will face my fear. I will permit it to pass over me and through me.</span>
+            </p>
+            <div class="reader-action-toolbar">
+              <button class="toolbar-chip">Start discussion (8)</button>
+              <button class="toolbar-chip secondary">Save quote</button>
+              <button class="toolbar-chip secondary">Highlight</button>
+            </div>
+            <p>
+              And when it has gone past I will turn the inner eye to see its path. Where the fear has gone there will be nothing. Only I will remain.
+            </p>
+          </div>
+        </div>
+
+        <div class="scrubber-module">
+          <div class="scrubber-header">
+            <span>Chapter 4 progress</span>
+            <span>4 members currently active</span>
+          </div>
+          <div class="scrubber-line">
+            <div class="scrubber-progress"></div>
+            <div class="scrubber-pin pin-a" title="Marcus">M</div>
+            <div class="scrubber-pin pin-b" title="Elena">E</div>
+            <div class="scrubber-pin pin-user" title="You (Page 84)">You</div>
+            <div class="scrubber-pin pin-c" title="Priya">P</div>
+          </div>
+        </div>
       </div>
 
-      <div class="proof-strip">
-        <div class="proof-item">
-          <div class="proof-num">3,400+</div>
-          <div class="proof-label">Active Reading Circles</div>
+      <div class="reader-margin-pane">
+        <div>
+          <div class="margin-header">
+            <div class="margin-label">Margin thread</div>
+            <div class="margin-title">The Litany as Psychological Anchor</div>
+          </div>
+
+          <div class="selected-quote-callout">
+            "I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration."
+          </div>
+
+          <div class="thread-entry">
+            <div class="entry-author">
+              <span>Elena Vance</span>
+              <span class="entry-time">12 minutes ago</span>
+            </div>
+            <div class="entry-body">
+              Notice how Herbert treats fear as an external weather condition rather than an internal failing. You allow it to pass through rather than resisting it directly.
+            </div>
+            <div class="entry-meta">
+              <span>14 reactions</span>
+              <span>4 replies</span>
+            </div>
+          </div>
+
+          <div class="thread-entry">
+            <div class="entry-author">
+              <span>Marcus Cole</span>
+              <span class="entry-time">4 minutes ago</span>
+            </div>
+            <div class="entry-body">
+              This connects directly to the prana-bindu control exercises introduced in chapter 2.
+            </div>
+            <div class="entry-meta">
+              <span>6 reactions</span>
+            </div>
+          </div>
         </div>
-        <div class="proof-item">
-          <div class="proof-num">85,000+</div>
-          <div class="proof-label">Margin Annotations Shared</div>
-        </div>
-        <div class="proof-item">
-          <div class="proof-num">100%</div>
-          <div class="proof-label">Free of Ad Trackers & Noise</div>
+
+        <div class="reply-form">
+          <input type="text" class="reply-input" value="It foreshadows the desert trials in part two." readonly>
+          <button class="reply-submit">Send</button>
         </div>
       </div>
     </section>
 
-    <!-- Product Showcase: The Live Reader & Margin Discussion (Converted from Flutter Code) -->
-    <section id="reader" class="showcase-section">
-      <div class="reader-stage">
-        <!-- Left: The Reading Well -->
-        <div class="reading-well">
-          <div>
-            <div class="reader-header">
-              <div class="book-meta">
-                <span>Reading:</span>
-                <strong>Dune</strong>
-                <span>&bull; Frank Herbert</span>
-              </div>
-              <div>Page 84 of 412</div>
-            </div>
-
-            <div class="chapter-heading">Chapter IV &mdash; The Litany Against Fear</div>
-
-            <div class="reading-content">
-              <p>
-                The room grew quiet as the gom jabbar remained steady at his neck. Paul remembered the old proverb from the Orange Catholic Bible, whispered in the deep stone halls of Castle Caladan.
-              </p>
-
-              <!-- Converted Flutter PassageSelectionContextMenu & PassageSelectionHighlight -->
-              <p style="position: relative;">
-                <span class="context-menu-popover">
-                  <button class="context-menu-btn active">&bull; 💬 Discuss (8)</button>
-                  <button class="context-menu-btn">&bull; &starf; Rate 4.9</button>
-                  <button class="context-menu-btn">&bull; 🔖 Quote Card</button>
-                  <button class="context-menu-btn">&bull; 🖍 Highlight</button>
-                </span>
-                <mark class="bookies-highlight">&ldquo;I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration. I will face my fear. I will permit it to pass over me and through me.&rdquo;</mark>
-              </p>
-
-              <p>
-                And when it has gone past I will turn the inner eye to see its path. Where the fear has gone there will be nothing. Only I will remain.
-              </p>
-            </div>
-          </div>
-
-          <!-- Converted Flutter AmbientProgressBar -->
-          <div class="ambient-bar-container">
-            <div class="ambient-bar-label">
-              <span>Chapter IV Progression</span>
-              <span>4 Club Members Active</span>
-            </div>
-            <div class="ambient-track">
-              <div class="ambient-fill"></div>
-              <div class="participant-pin pin-marcus" title="Marcus Cole (Pg 72)">M</div>
-              <div class="participant-pin pin-elena" title="Elena Vance (Pg 78)">E</div>
-              <div class="participant-pin pin-you" title="You (Pg 84 &bull; 64%)">You</div>
-              <div class="participant-pin pin-priya" title="Priya Patel (Pg 92)">P</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: The Marginalia Panel (Converted from Flutter MarginaliaCard) -->
-        <div class="marginalia-panel">
-          <div>
-            <div class="thread-header">
-              <div>
-                <div class="badge-live"><span class="live-dot"></span> Live Reading Session</div>
-                <h3 class="thread-title" style="margin-top: 0.5rem;">The Litany as Psychological Anchor</h3>
-              </div>
-            </div>
-
-            <div class="quote-anchor">
-              &ldquo;I must not fear. Fear is the mind-killer...&rdquo;
-            </div>
-
-            <div class="comments-stream">
-              <div class="comment-card">
-                <div class="avatar av-elena">E</div>
-                <div class="comment-body">
-                  <div class="comment-meta">
-                    <span class="comment-author">Elena Vance</span>
-                    <span class="comment-time">12m ago</span>
-                  </div>
-                  <div class="comment-text">
-                    Notice how Herbert treats fear as an external weather pattern rather than an internal flaw &mdash; you allow it to flow through rather than resisting it.
-                  </div>
-                  <div class="reactions-bar">
-                    <span class="reaction-pill">&bull; &bull; &bull; 🔥 8</span>
-                    <span class="reaction-pill">&bull; 💡 14</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="comment-card">
-                <div class="avatar av-marcus">M</div>
-                <div class="comment-body">
-                  <div class="comment-meta">
-                    <span class="comment-author">Marcus Cole</span>
-                    <span class="comment-time">4m ago</span>
-                  </div>
-                  <div class="comment-text">
-                    Completely agreed. It echoes the Zen mindfulness teachings Paul learned during his early prana-bindu training on Caladan.
-                  </div>
-                  <div class="reactions-bar">
-                    <span class="reaction-pill">&bull; ❤️ 5</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="reply-box">
-            <input type="text" class="reply-input" placeholder="Add a thought to this passage..." readonly value="It foreshadows the trial in the deep desert...">
-            <button class="reply-btn">Reply</button>
+    <!-- Features -->
+    <section id="features" class="feature-list">
+      <div class="feature-row">
+        <h2 class="feature-heading">In-margin sentence discussions</h2>
+        <div>
+          <p class="feature-description">
+            Conversations remain anchored to the exact sentence or paragraph that prompted them. When you select a phrase, you can open a thread that stays linked to that passage for all members of your club.
+          </p>
+          <div class="feature-spec">
+            <strong>Location fidelity:</strong> Uses canonical EPUB CFI coordinates so highlights and threads match across different screen sizes and font settings.
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Editorial Pillars (Informative Product Architecture) -->
-    <section id="how-it-works">
-      <div class="section-title">
-        <div class="section-tag">Thoughtful Architecture</div>
-        <h2>Designed for deep readers, not doom-scrollers.</h2>
-        <p>Bookies rejects noisy feeds and surface-level ratings. Every interaction is anchored to the intimacy of the text.</p>
+      <div class="feature-row">
+        <h2 class="feature-heading">Synchronized reading presence</h2>
+        <div>
+          <p class="feature-description">
+            The progress scrubber at the base of the reader shows where club members are located within the current chapter. You can see when fellow members are reading at the same time.
+          </p>
+          <div class="feature-spec">
+            <strong>Co-presence:</strong> Progress markers update smoothly through low-latency socket events.
+          </div>
+        </div>
       </div>
 
-      <div class="pillars-grid">
-        <div class="pillar-card">
-          <div>
-            <div class="pillar-num">01</div>
-            <h3 class="pillar-heading">Margin Notes, Not Chat Rooms</h3>
-            <p class="pillar-desc">
-              Conversations don't get lost in chaotic messaging threads. In Bookies, every debate, annotation, and observation is pinned to the exact sentence or paragraph in the EPUB.
-            </p>
-          </div>
-          <div class="pillar-micro-ui">
-            <strong>Sentence-Level CFI Precision:</strong> Tap any passage to start a dedicated thread that stays with the text across devices.
+      <div class="feature-row">
+        <h2 class="feature-heading">Progressive spoiler protection</h2>
+        <div>
+          <p class="feature-description">
+            Club members read at different speeds. Margin notes and thread discussions for future chapters remain hidden until you reach that chapter yourself, protecting your reading experience.
+          </p>
+          <div class="feature-spec">
+            <strong>Pacing:</strong> Set weekly chapter goals to guide group discussions.
           </div>
         </div>
+      </div>
 
-        <div class="pillar-card">
-          <div>
-            <div class="pillar-num">02</div>
-            <h3 class="pillar-heading">Ambient Synchronous Co-Presence</h3>
-            <p class="pillar-desc">
-              Reading has historically been solitary. Bookies brings the cozy feeling of sitting in the same library room with friends. See ambient progress markers as your club reads in real time.
-            </p>
-          </div>
-          <div class="pillar-micro-ui">
-            <strong>Live Progress Scrubber:</strong> Glance at the bottom ambient bar to see who is reading along with you right now.
-          </div>
-        </div>
-
-        <div class="pillar-card">
-          <div>
-            <div class="pillar-num">03</div>
-            <h3 class="pillar-heading">Automatic Spoiler Shielding</h3>
-            <p class="pillar-desc">
-              Read at your own pace without dreading what’s ahead. Bookies locks margin notes and club discussion threads behind progressive chapter curtains until you reach that milestone in the text.
-            </p>
-          </div>
-          <div class="spoiler-curtain">
-            <strong>🔒 Chapter 16 Spoilers Hidden</strong>
-            <span>Progress through Chapter 16 to unlock member discussion notes.</span>
-          </div>
-        </div>
-
-        <div class="pillar-card">
-          <div>
-            <div class="pillar-num">04</div>
-            <h3 class="pillar-heading">Typographic Quote Cards</h3>
-            <p class="pillar-desc">
-              Turn poignant lines into editorial-grade quote cards formatted with classic bookbinding borders, serif typography, and chapter citations. Perfect for your notebook or sharing with literary circles.
-            </p>
-          </div>
-          <div class="pillar-micro-ui" style="border-left: 3px solid var(--terracotta); font-family: var(--font-serif); font-style: italic;">
-            &ldquo;A beginning is the time for taking the most delicate care that the balances are correct.&rdquo;
-            <div style="font-style: normal; font-family: var(--font-sans); font-size: 0.75rem; color: var(--ink-faint); margin-top: 0.4rem;">
-              Princess Irulan &bull; Dune &bull; Impact Rating 4.9/5
-            </div>
+      <div class="feature-row">
+        <h2 class="feature-heading">Formatted quote cards</h2>
+        <div>
+          <p class="feature-description">
+            Save memorable sentences to your personal archive as formatted passage cards with complete book and chapter attribution.
+          </p>
+          <div class="feature-spec">
+            <strong>Export:</strong> Copy passages or save them as clean typographical cards.
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Reading Clubs Section -->
+    <!-- Book clubs -->
     <section id="clubs" class="clubs-section">
-      <div class="clubs-container">
-        <div class="section-title" style="margin-bottom: 2rem;">
-          <div class="section-tag">Community Life</div>
-          <h2>Find your people around a book.</h2>
-          <p>Join an existing circle or gather your closest friends to embark on a story together.</p>
-        </div>
+      <h2 class="section-title">Active reading clubs</h2>
+      <p class="section-lead">Join an open community or create a private circle for your friends.</p>
 
-        <div class="clubs-grid">
-          <div class="club-card">
-            <div>
-              <span class="club-badge">Sci-Fi & Speculative</span>
-              <h3 class="club-title">The Deep Sci-Fi Collective</h3>
-              <div class="club-book">Currently Reading: Dune</div>
-              <div class="club-target">
-                <strong>Weekly Cadence:</strong> Chapters 12&ndash;16 by Sunday 8:00 PM
-              </div>
-            </div>
-            <div class="club-footer">
-              <span>24 Active Readers</span>
-              <span>&bull; 6 Reading Now</span>
-            </div>
-          </div>
-
-          <div class="club-card">
-            <div>
-              <span class="club-badge">Modern Fiction</span>
-              <h3 class="club-title">The Literary Salon</h3>
-              <div class="club-book">Currently Reading: Tomorrow, and Tomorrow, and Tomorrow</div>
-              <div class="club-target">
-                <strong>Weekly Cadence:</strong> Act II Discussion &bull; Ch. 6&ndash;9
-              </div>
-            </div>
-            <div class="club-footer">
-              <span>38 Active Readers</span>
-              <span>&bull; 9 Reading Now</span>
-            </div>
-          </div>
-
-          <div class="club-card">
-            <div>
-              <span class="club-badge">Classic Literature</span>
-              <h3 class="club-title">Gothic Romance Fellowship</h3>
-              <div class="club-book">Currently Reading: Frankenstein</div>
-              <div class="club-target">
-                <strong>Weekly Cadence:</strong> Letters 1&ndash;4 & Chapters 1&ndash;5
-              </div>
-            </div>
-            <div class="club-footer">
-              <span>19 Active Readers</span>
-              <span>&bull; 4 Reading Now</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <table class="clubs-table">
+        <thead>
+          <tr>
+            <th>Club</th>
+            <th>Current book</th>
+            <th>Pacing goal</th>
+            <th>Members</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="club-name">The Speculative Fiction Circle</td>
+            <td class="club-book">Dune by Frank Herbert</td>
+            <td>Chapters 12 to 16 by Sunday</td>
+            <td>24 active</td>
+          </tr>
+          <tr>
+            <td class="club-name">Modern Fiction Group</td>
+            <td class="club-book">Tomorrow, and Tomorrow, and Tomorrow</td>
+            <td>Act 2, Chapters 6 to 9</td>
+            <td>38 active</td>
+          </tr>
+          <tr>
+            <td class="club-name">Nineteenth Century Classics</td>
+            <td class="club-book">Frankenstein by Mary Shelley</td>
+            <td>Volume 2, Chapters 1 to 5</td>
+            <td>19 active</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
 
-    <!-- FAQ Section -->
+    <!-- FAQ -->
     <section class="faq-section">
-      <div class="section-title" style="margin-bottom: 2.5rem;">
-        <div class="section-tag">Frequently Asked Questions</div>
-        <h2>Everything you need to know.</h2>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question">Can I import my own EPUB books into Bookies?</div>
-        <div class="faq-answer">
-          Yes! Bookies is an open EPUB reader. You can import any DRM-free .epub file from your device or cloud storage. Bookies indexes canonical EPUB CFI locations to ensure that all margin notes and highlights line up perfectly across every screen size.
+      <h2 class="section-title">Frequently asked questions</h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h3>Can I bring my own EPUB files?</h3>
+          <p>
+            Yes. Bookies supports standard DRM-free EPUB files. You can upload books from your local device or cloud storage.
+          </p>
         </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question">How do Book Clubs and reading paces work?</div>
-        <div class="faq-answer">
-          Anyone can create a public or private book club in seconds. Set a weekly reading target (e.g., 3 chapters per week), invite your friends via a private invite link, and enjoy in-margin notes and synchronous reading sessions. Notes for future chapters remain shielded until you catch up.
+        <div class="faq-item">
+          <h3>Are book clubs private?</h3>
+          <p>
+            You can create invite-only clubs with private links, or open public clubs visible to the community.
+          </p>
         </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question">Is Bookies free to use?</div>
-        <div class="faq-answer">
-          Yes. The core e-reader, personal bookshelf, margin annotation tools, and private book clubs are completely free. We do not sell user data or show advertisements.
+        <div class="faq-item">
+          <h3>What data does Bookies store?</h3>
+          <p>
+            We store only your account email, display name, reading locations, and notes you post. We do not sell data or run advertising trackers.
+          </p>
         </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-question">How does authentication work?</div>
-        <div class="faq-answer">
-          You can securely sign in using Google Sign-In or your personal email address. We request only basic identity scopes (name and email) to provision your reader profile.
+        <div class="faq-item">
+          <h3>How do I authenticate?</h3>
+          <p>
+            You can sign in securely using Google Sign-In or your personal email address.
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- Final Call to Action -->
-    <section id="download" style="padding: 0 1.5rem;">
-      <div class="final-cta">
-        <h2>Your reading nook awaits.</h2>
-        <p>
-          Gather your reading circle, crack open a fresh story, and discover the joy of reading together in the margins.
-        </p>
-        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
-          <a href="#" class="btn btn-primary" style="background: #FFFFFF; color: var(--terracotta);">
-            Download for Android
-          </a>
-          <a href="#" class="btn btn-secondary" style="background: transparent; color: #FFFFFF; border-color: rgba(255, 255, 255, 0.4);">
-            Download for iOS
-          </a>
-        </div>
+    <!-- Download banner -->
+    <section id="download" class="download-banner">
+      <h2>Get started with Bookies</h2>
+      <p>Download the application on Android or iOS to join your first reading circle.</p>
+      <div class="cta-row">
+        <a href="#" class="btn btn-primary">Android APK / Play Store</a>
+        <a href="#" class="btn btn-secondary">Apple App Store</a>
       </div>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer>
     <div class="footer-inner">
-      <div class="footer-col-brand">
-        <div class="footer-brand">Bookies</div>
-        <p class="footer-tagline">
-          An independent social e-reader and reading club platform designed for slow readers, thoughtful annotators, and warm literary communities.
-        </p>
-      </div>
-
-      <div class="footer-links">
-        <div class="footer-link-group">
-          <h4>Explore</h4>
-          <a href="#reader">The Reader</a>
-          <a href="#how-it-works">How It Works</a>
-          <a href="#clubs">Book Clubs</a>
-          <a href="#download">Get App</a>
-        </div>
-
-        <div class="footer-link-group">
-          <h4>Legal & Trust</h4>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="mailto:bookies.support@gmail.com">Contact Support</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
       <div>&copy; ${new Date().getFullYear()} Bookies. All rights reserved.</div>
-      <div>Support: <a href="mailto:bookies.support@gmail.com">bookies.support@gmail.com</a></div>
+      <div class="footer-links">
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+        <a href="mailto:bookies.support@gmail.com">bookies.support@gmail.com</a>
+      </div>
     </div>
   </footer>
 </body>
@@ -1330,21 +900,20 @@ export class AppController {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy Policy &mdash; Bookies</title>
+  <title>Privacy Policy: Bookies</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600;6..72,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --canvas: #FAF7F2;
-      --canvas-surface: #FFFFFF;
-      --canvas-muted: #F4EFEB;
-      --ink: #201A16;
-      --ink-muted: #665851;
-      --ink-faint: #9E9189;
-      --terracotta: #8B3A2B;
-      --border: #E5DFD5;
-      --border-strong: #D5CCC0;
+      --canvas: #FBF9F5;
+      --surface: #FFFFFF;
+      --surface-subtle: #F3EFE9;
+      --ink: #1F1B18;
+      --ink-secondary: #5C524B;
+      --border: #E4DCD3;
+      --accent: #8F3926;
+      --radius: 6px;
       --font-serif: 'Newsreader', Georgia, serif;
       --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     }
@@ -1354,174 +923,365 @@ export class AppController {
       color: var(--ink);
       font-family: var(--font-sans);
       line-height: 1.7;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      font-size: 16px;
     }
     header {
-      background: rgba(250, 247, 242, 0.95);
-      backdrop-filter: blur(8px);
-      padding: 1.25rem 2rem;
+      background-color: var(--canvas);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+    }
+    .header-inner {
+      max-width: 840px;
+      margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--border);
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 10px;
       text-decoration: none;
       color: var(--ink);
     }
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
-      background: var(--terracotta);
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      background-color: var(--accent);
+      border-radius: var(--radius);
       display: flex;
       align-items: center;
       justify-content: center;
+      color: #FFFFFF;
       font-family: var(--font-serif);
       font-weight: 700;
-      color: white;
+      font-size: 16px;
     }
     .brand-name {
       font-family: var(--font-serif);
-      font-size: 1.45rem;
+      font-size: 20px;
       font-weight: 700;
     }
     nav a {
-      color: var(--ink-muted);
+      color: var(--ink-secondary);
       text-decoration: none;
-      font-size: 0.95rem;
+      font-size: 14px;
       font-weight: 500;
-      transition: color 0.15s;
     }
-    nav a:hover { color: var(--terracotta); }
+    nav a:hover { color: var(--accent); }
     .container {
       max-width: 840px;
       margin: 0 auto;
-      padding: 4rem 1.5rem;
-      flex: 1;
+      padding: 48px 24px 80px;
     }
     h1 {
       font-family: var(--font-serif);
-      font-size: 2.8rem;
+      font-size: 36px;
       font-weight: 700;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.02em;
+      margin-bottom: 8px;
       color: var(--ink);
     }
-    .last-updated {
-      color: var(--terracotta);
-      font-size: 0.92rem;
-      margin-bottom: 2.5rem;
-      font-weight: 600;
+    .effective-date {
+      color: var(--ink-secondary);
+      font-size: 14px;
+      margin-bottom: 32px;
     }
-    .card {
-      background-color: var(--canvas-surface);
+    .policy-card {
+      background-color: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.75rem;
-      box-shadow: 0 4px 14px rgba(36, 26, 22, 0.04);
+      border-radius: var(--radius);
+      padding: 40px;
     }
     h2 {
       font-family: var(--font-serif);
-      font-size: 1.5rem;
+      font-size: 20px;
       font-weight: 600;
-      margin-top: 2rem;
-      margin-bottom: 0.75rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
       color: var(--ink);
       border-bottom: 1px solid var(--border);
-      padding-bottom: 0.4rem;
+      padding-bottom: 6px;
     }
     h2:first-of-type { margin-top: 0; }
     p, ul {
-      color: var(--ink-muted);
-      margin-bottom: 1.15rem;
-      font-size: 1rem;
+      color: var(--ink-secondary);
+      margin-bottom: 16px;
+      font-size: 15px;
     }
-    ul { padding-left: 1.5rem; }
-    li { margin-bottom: 0.5rem; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; }
     strong { color: var(--ink); }
-    a { color: var(--terracotta); text-decoration: none; }
+    a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
     footer {
       border-top: 1px solid var(--border);
-      padding: 2.5rem 1.5rem;
+      background-color: var(--surface-subtle);
+      padding: 24px;
+      font-size: 13px;
+      color: var(--ink-secondary);
       text-align: center;
-      color: var(--ink-faint);
-      font-size: 0.9rem;
-      background: var(--canvas-muted);
     }
-    footer a { color: var(--ink-muted); }
   </style>
 </head>
 <body>
   <header>
-    <a href="/home" class="brand">
-      <div class="brand-icon">B</div>
-      <div class="brand-name">Bookies</div>
-    </a>
-    <nav>
-      <a href="/home">&larr; Back to Home</a>
-    </nav>
+    <div class="header-inner">
+      <a href="/home" class="brand">
+        <div class="brand-mark">B</div>
+        <div class="brand-name">Bookies</div>
+      </a>
+      <nav>
+        <a href="/home">Back to Home</a>
+      </nav>
+    </div>
   </header>
 
   <div class="container">
     <h1>Privacy Policy</h1>
-    <div class="last-updated">Effective Date: October 30, 2026</div>
+    <div class="effective-date">Effective Date: October 30, 2026</div>
 
-    <div class="card">
+    <div class="policy-card">
       <h2>1. Introduction</h2>
       <p>
-        Welcome to <strong>Bookies</strong> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;). We are committed to protecting your privacy and ensuring your personal information is handled in a safe and responsible manner. This Privacy Policy details our practices concerning data collection, usage, and protection when you use the Bookies mobile applications and associated cloud backend services.
+        Bookies provides social e-reader tools and shared reading communities. This policy explains what information is collected, how it is handled, and your rights regarding that information when using our mobile applications and related web services.
       </p>
 
       <h2>2. Information We Collect</h2>
-      <p>We collect only the information strictly necessary to provide you with social reading and synchronized book club features:</p>
+      <p>We collect only the data required to support reader synchronization and community features:</p>
       <ul>
-        <li><strong>Google OAuth Account Information:</strong> When you choose to authenticate via Google Sign-In, we receive your verified email address, display name, and avatar picture URL. We use this strictly to provision and display your reader profile.</li>
-        <li><strong>Reading Progress & Annotations:</strong> We store your reading locations (EPUB CFI locators), reading progression percentages, margin comments, passage discussions, and live reading co-presence indicators.</li>
-        <li><strong>Community & Club Memberships:</strong> Information about the book clubs and discussion groups you create or join.</li>
+        <li><strong>Google OAuth Account Information:</strong> When signing in with Google, we receive your email address, display name, and avatar URL. We use this strictly to identify your account and display your reader profile.</li>
+        <li><strong>Reading Progress and Annotations:</strong> We store your reading locations (EPUB CFI locators), reading percentages, margin notes, and thread comments.</li>
+        <li><strong>Book Club Memberships:</strong> Information about the clubs you create or join and your participation records.</li>
       </ul>
 
-      <h2>3. How We Use Your Information</h2>
-      <p>Your data is used strictly to power core app functionality:</p>
+      <h2>3. How We Use Information</h2>
+      <p>We use this data solely to provide core features:</p>
       <ul>
-        <li>Authenticating your session securely across devices.</li>
+        <li>Authenticating your session across devices.</li>
         <li>Synchronizing your reading position with your book clubs.</li>
-        <li>Delivering real-time co-presence and live passage reactions to fellow club members.</li>
-        <li>We <strong>NEVER</strong> sell, rent, monetize, or share your personal information with third-party advertising brokers or tracking networks.</li>
+        <li>Delivering real-time margin notes to other members of your club.</li>
+        <li>We do not sell, rent, or share personal information with third-party advertising networks.</li>
       </ul>
 
-      <h2>4. Data Storage, Security & Encryption</h2>
+      <h2>4. Data Security</h2>
       <p>
-        All communications between your device and our servers are encrypted using Transport Layer Security (HTTPS/TLS). Sensitive access tokens are stored securely in hardware-backed platform keystores (Android Keystore / iOS Keychain). Backend database connections are strictly authenticated and encrypted.
+        All traffic between client devices and our servers is encrypted using Transport Layer Security (HTTPS/TLS). Sensitive credentials and access tokens are secured using platform keystores.
       </p>
 
-      <h2>5. Google User Data Policy Compliance</h2>
+      <h2>5. Google API Services Compliance</h2>
       <p>
-        Bookies&rsquo; use and transfer to any other app of information received from Google APIs adheres to the 
-        <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements. We request only the minimum necessary Google scopes (<code>email</code>, <code>profile</code>, <code>openid</code>).
+        Bookies adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements. We request only the standard identity scopes (email, profile, openid).
       </p>
 
-      <h2>6. Your Rights & Account Deletion</h2>
+      <h2>6. Account Deletion and Data Rights</h2>
       <p>
-        You retain full control over your personal data. You may request the export or complete deletion of your account, annotations, and reading history at any time by contacting our support team or initiating deletion from within the app settings.
+        You have the right to request a copy of your stored notes or to delete your account entirely. You can initiate deletion directly in the application settings or by contacting our team.
       </p>
 
       <h2>7. Contact Information</h2>
       <p>
-        If you have any questions or concerns regarding this Privacy Policy or our security practices, please contact us at:<br>
-        <strong>Email:</strong> <a href="mailto:bookies.support@gmail.com">bookies.support@gmail.com</a>
+        For inquiries regarding this privacy policy or your data, contact:<br>
+        Email: <a href="mailto:bookies.support@gmail.com">bookies.support@gmail.com</a>
       </p>
     </div>
   </div>
 
   <footer>
-    <p>&copy; ${new Date().getFullYear()} Bookies. All rights reserved. &bull; <a href="/home">Home</a> &bull; Support: <a href="mailto:bookies.support@gmail.com">bookies.support@gmail.com</a></p>
+    &copy; ${new Date().getFullYear()} Bookies. All rights reserved. &bull; <a href="/home">Home</a> &bull; <a href="/terms">Terms of Service</a> &bull; Support: <a href="mailto:bookies.support@gmail.com">bookies.support@gmail.com</a>
+  </footer>
+</body>
+</html>`;
+  }
+
+  /**
+   * Public Terms of Service page.
+   */
+  @Get('terms')
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  getTermsPage(): string {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service: Bookies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #FBF9F5;
+      --surface: #FFFFFF;
+      --surface-subtle: #F3EFE9;
+      --ink: #1F1B18;
+      --ink-secondary: #5C524B;
+      --border: #E4DCD3;
+      --accent: #8F3926;
+      --radius: 6px;
+      --font-serif: 'Newsreader', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+    header {
+      background-color: var(--canvas);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+    }
+    .header-inner {
+      max-width: 840px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--ink);
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      background-color: var(--accent);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .brand-name {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 700;
+    }
+    nav a {
+      color: var(--ink-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    nav a:hover { color: var(--accent); }
+    .container {
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+    .effective-date {
+      color: var(--ink-secondary);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+    .terms-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+    }
+    h2 {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      color: var(--ink);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+    h2:first-of-type { margin-top: 0; }
+    p, ul {
+      color: var(--ink-secondary);
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    strong { color: var(--ink); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    footer {
+      border-top: 1px solid var(--border);
+      background-color: var(--surface-subtle);
+      padding: 24px;
+      font-size: 13px;
+      color: var(--ink-secondary);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/home" class="brand">
+        <div class="brand-mark">B</div>
+        <div class="brand-name">Bookies</div>
+      </a>
+      <nav>
+        <a href="/home">Back to Home</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1>Terms of Service</h1>
+    <div class="effective-date">Effective Date: October 30, 2026</div>
+
+    <div class="terms-card">
+      <h2>1. Acceptance of Terms</h2>
+      <p>
+        By accessing or using the Bookies mobile applications and related web services, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you should not access or use the service.
+      </p>
+
+      <h2>2. User Accounts and Eligibility</h2>
+      <p>
+        To access community features and margin synchronization, you must register for an account using Google authentication or email. You are responsible for safeguarding your login credentials and for all activities that occur under your account.
+      </p>
+
+      <h2>3. Intellectual Property and Content</h2>
+      <p>
+        You retain ownership of any margin comments, notes, and discussion entries you author. By posting in a public or shared book club, you grant Bookies a non-exclusive license to display your notes to fellow members of that club.
+      </p>
+      <p>
+        You are responsible for ensuring that any EPUB files you import into your personal account do not infringe on copyright or third-party rights.
+      </p>
+
+      <h2>4. Community Standards</h2>
+      <p>
+        Users agree not to post content that is unlawful, abusive, harassing, defamatory, or invasive of another person's privacy. Clubs that violate community safety standards may be removed.
+      </p>
+
+      <h2>5. Service Availability</h2>
+      <p>
+        We aim for continuous service availability, but we do not guarantee uninterrupted operation. We may modify or update the service as necessary to address security or performance needs.
+      </p>
+
+      <h2>6. Contact</h2>
+      <p>
+        For inquiries regarding these terms, contact us at: <a href="mailto:bookies.support@gmail.com">bookies.support@gmail.com</a>.
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    &copy; ${new Date().getFullYear()} Bookies. All rights reserved. &bull; <a href="/home">Home</a> &bull; <a href="/privacy">Privacy Policy</a> &bull; Support: <a href="mailto:bookies.support@gmail.com">bookies.support@gmail.com</a>
   </footer>
 </body>
 </html>`;
