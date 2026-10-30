@@ -399,20 +399,19 @@ export class AppController {
       cursor: pointer;
     }
 
-    /* PassageSelectionContextMenu (Exact Flutter port) */
+    /* PassageSelectionContextMenu (Refined, Appealing Flutter Port) */
     .passage-context-menu {
       border: 1px solid var(--border);
       border-radius: 16px;
       background-color: var(--surface);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
       overflow: hidden;
       margin: 14px 0 16px;
     }
     .pcm-header {
-      background-color: rgba(180, 83, 9, 0.08);
-      border-left: 4px solid var(--accent);
+      background-color: var(--surface-subtle);
       border-bottom: 1px solid var(--border);
-      padding: 10px 12px;
+      padding: 10px 14px;
     }
     .pcm-top-row {
       display: flex;
@@ -423,44 +422,34 @@ export class AppController {
     .pcm-tag {
       display: flex;
       align-items: center;
-      gap: 5px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: var(--accent);
-      font-family: var(--font-sans);
-    }
-    .pcm-adjust-group {
-      display: flex;
-      align-items: center;
       gap: 6px;
-    }
-    .pcm-adjust-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 3px 7px;
-      background-color: rgba(180, 83, 9, 0.12);
-      border: 1px solid rgba(180, 83, 9, 0.28);
-      border-radius: 12px;
-      color: var(--accent);
       font-size: 10px;
       font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--accent);
       font-family: var(--font-sans);
-      cursor: pointer;
+    }
+    .pcm-accent-pill {
+      width: 3px;
+      height: 12px;
+      background-color: var(--accent);
+      border-radius: 2px;
     }
     .pcm-close-btn {
       background: none;
       border: none;
-      color: var(--ink-secondary);
-      font-size: 13px;
+      color: var(--ink-tertiary);
+      font-size: 14px;
       cursor: pointer;
       padding: 2px 4px;
       line-height: 1;
     }
+    .pcm-close-btn:hover {
+      color: var(--ink);
+    }
     .pcm-quote-text {
       font-style: italic;
-      font-size: 12px;
+      font-size: 13px;
       line-height: 1.35;
       color: var(--ink);
       font-family: var(--font-serif);
@@ -468,8 +457,8 @@ export class AppController {
     .pcm-toolbar {
       display: flex;
       align-items: center;
-      justify-content: space-around;
-      padding: 8px 6px;
+      justify-content: space-between;
+      padding: 8px 10px;
       background-color: var(--surface);
     }
     .pcm-action-btn {
@@ -484,16 +473,24 @@ export class AppController {
       font-family: var(--font-sans);
       cursor: pointer;
       padding: 4px 6px;
+      border-radius: 6px;
+    }
+    .pcm-action-btn:hover {
+      background-color: var(--surface-subtle);
     }
     .pcm-action-btn.primary {
+      background-color: rgba(180, 83, 9, 0.12);
+      border: 1px solid rgba(180, 83, 9, 0.28);
+      border-radius: 8px;
       color: var(--accent);
+      font-weight: 700;
+      padding: 5px 10px;
     }
     .pcm-divider {
       width: 1px;
       height: 16px;
       background-color: var(--border);
     }
-
     /* Mobile Reader Bottom Footer */
     .reader-phone-footer {
       padding: 10px 16px 14px;
@@ -889,28 +886,18 @@ export class AppController {
             </span>
           </p>
 
-          <!-- Floating PassageSelectionContextMenu (Exact App Match) -->
+          <!-- Floating PassageSelectionContextMenu (Refined, Appealing Match) -->
           <div class="passage-context-menu">
             <div class="pcm-header">
               <div class="pcm-top-row">
                 <div class="pcm-tag">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="14" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+                  <span class="pcm-accent-pill"></span>
                   <span>SELECTED PASSAGE</span>
                 </div>
-                <div class="pcm-adjust-group">
-                  <button class="pcm-adjust-chip" title="Shorten selection">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    <span>Shorten</span>
-                  </button>
-                  <button class="pcm-adjust-chip" title="Expand selection">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    <span>Expand</span>
-                  </button>
-                  <button class="pcm-close-btn" aria-label="Dismiss">&times;</button>
-                </div>
+                <button class="pcm-close-btn" aria-label="Dismiss">&times;</button>
               </div>
               <div class="pcm-quote-text">
-                "I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration..."
+                &ldquo;I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration...&rdquo;
               </div>
             </div>
             <div class="pcm-toolbar">
@@ -919,19 +906,19 @@ export class AppController {
                 <span>Start Thread</span>
               </button>
               <span class="pcm-divider"></span>
-              <button class="pcm-action-btn" title="Rate this passage">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                <span>Rate</span>
-              </button>
-              <span class="pcm-divider"></span>
-              <button class="pcm-action-btn" title="Save quote">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path></svg>
-                <span>Save</span>
-              </button>
-              <span class="pcm-divider"></span>
               <button class="pcm-action-btn" title="Highlight text">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h3l6-6"></path><path d="m22 12-4.6 4.6a2.78 2.78 0 0 1-3.9 0l-4.1-4.1a2.78 2.78 0 0 1 0-3.9L14 4"></path></svg>
                 <span>Highlight</span>
+              </button>
+              <span class="pcm-divider"></span>
+              <button class="pcm-action-btn" title="Save quote">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                <span>Save</span>
+              </button>
+              <span class="pcm-divider"></span>
+              <button class="pcm-action-btn" title="Copy passage text">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span>Copy</span>
               </button>
             </div>
           </div>
