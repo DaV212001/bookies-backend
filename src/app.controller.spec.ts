@@ -48,9 +48,9 @@ describe('AppController', () => {
       const html = controller.getHomePage();
       expect(html).toContain('Bookies');
       expect(html).toContain('<!DOCTYPE html>');
-      expect(html).toContain('Social EPUB Reader');
+      expect(html).toContain('Social Reading');
       expect(html).toContain('/privacy');
-      expect(html).toContain('/health');
+      expect(html).not.toContain('/health');
     });
   });
 
@@ -60,7 +60,8 @@ describe('AppController', () => {
       expect(html).toContain('Privacy Policy');
       expect(html).toContain('<!DOCTYPE html>');
       expect(html).toContain('Google OAuth');
-      expect(html).toContain('support@bookies.app');
+      expect(html).toContain('bookies.support@gmail.com');
+      expect(html).not.toContain('/health');
     });
   });
 });
