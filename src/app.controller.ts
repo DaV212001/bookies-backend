@@ -217,141 +217,313 @@ export class AppController {
       border-color: var(--border-focus);
     }
 
-    /* Live reader mockup: Two columns representing tablet view */
-    .reader-mockup {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background-color: var(--surface);
+    /* Mobile Reader Showcase & Context Menu */
+    .reader-showcase-container {
       display: grid;
-      grid-template-columns: 1.25fr 1fr;
+      grid-template-columns: 420px 1fr;
+      gap: 48px;
+      align-items: start;
       margin-bottom: 80px;
     }
-    @media (max-width: 860px) {
-      .reader-mockup {
+    @media (max-width: 960px) {
+      .reader-showcase-container {
         grid-template-columns: 1fr;
+        justify-items: center;
       }
     }
 
-    /* Left pane: Reading surface */
-    .reader-text-pane {
-      padding: 40px;
-      border-right: 1px solid var(--border);
+    /* Mobile Phone Hardware Shell */
+    .phone-frame {
+      width: 100%;
+      max-width: 410px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 36px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
     }
-    @media (max-width: 860px) {
-      .reader-text-pane {
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-      }
-    }
-    .reader-meta-bar {
+    .phone-notch-bar {
+      height: 28px;
       display: flex;
       justify-content: space-between;
-      font-size: 13px;
-      color: var(--ink-tertiary);
-      margin-bottom: 24px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .reader-chapter-title {
-      font-family: var(--font-serif);
-      font-size: 20px;
+      align-items: center;
+      padding: 6px 20px 0;
+      font-size: 11px;
       font-weight: 600;
-      color: var(--ink);
-      margin-bottom: 20px;
+      color: var(--ink-secondary);
+      background-color: var(--surface);
+      font-family: var(--font-sans);
     }
-    .book-passage {
-      font-family: var(--font-serif);
-      font-size: 18px;
-      line-height: 1.8;
-      color: var(--ink);
-    }
-    .book-passage p {
-      margin-bottom: 16px;
-    }
-    .highlighted-text {
-      background-color: #F8E6DE;
-      padding: 2px 4px;
-      border-radius: 2px;
-    }
-    .reader-action-toolbar {
-      display: flex;
-      gap: 8px;
-      margin: 16px 0;
-    }
-    .toolbar-chip {
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      border-radius: var(--radius);
-      background-color: var(--ink);
-      color: #FFFFFF;
-      border: none;
-      cursor: pointer;
-    }
-    .toolbar-chip.secondary {
-      background-color: var(--surface-subtle);
-      color: var(--ink);
-      border: 1px solid var(--border);
+    .notch-island {
+      width: 60px;
+      height: 12px;
+      background-color: #E2E8F0;
+      border-radius: 8px;
     }
 
-    /* Bottom scrubber track */
-    .scrubber-module {
-      margin-top: 32px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-    }
-    .scrubber-header {
+    /* Mobile Reader Top App Bar */
+    .reader-top-bar {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      font-size: 12px;
-      color: var(--ink-secondary);
-      margin-bottom: 8px;
-      font-weight: 500;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      background-color: var(--surface);
     }
-    .scrubber-line {
+    .reader-bar-btn {
+      background: none;
+      border: none;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: var(--radius);
+      line-height: 1;
+    }
+    .reader-bar-center {
+      text-align: center;
+    }
+    .reader-bar-title {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .reader-bar-community {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--accent);
+      background-color: rgba(180, 83, 9, 0.08);
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-top: 2px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+    }
+
+    /* Ambient Progress Bar */
+    .ambient-progress-track {
       position: relative;
-      height: 4px;
-      background-color: var(--border);
-      border-radius: 2px;
-      margin-bottom: 8px;
+      height: 22px;
+      background-color: var(--surface-subtle);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
     }
-    .scrubber-progress {
+    .ambient-fill {
       position: absolute;
       left: 0;
       top: 0;
       bottom: 0;
-      width: 62%;
-      background-color: var(--accent);
-      border-radius: 2px;
+      width: 64%;
+      background-color: rgba(180, 83, 9, 0.12);
     }
-    .scrubber-pin {
+    .ambient-pin {
       position: absolute;
       top: 50%;
       transform: translate(-50%, -50%);
       width: 18px;
       height: 18px;
-      border-radius: var(--radius);
-      background-color: var(--ink);
+      border-radius: 50%;
+      background-color: var(--ink-secondary);
       border: 2px solid var(--surface);
       color: #FFFFFF;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 1;
+      font-family: var(--font-sans);
     }
-    .pin-a { left: 32%; }
-    .pin-b { left: 50%; }
-    .pin-user { left: 62%; background-color: var(--accent); }
-    .pin-c { left: 84%; }
+    .ambient-pin.pin-active {
+      background-color: var(--accent);
+      width: 28px;
+      border-radius: 10px;
+      font-size: 10px;
+      z-index: 2;
+    }
+    .pin-pos-1 { left: 24%; }
+    .pin-pos-2 { left: 45%; }
+    .pin-pos-3 { left: 64%; }
+    .pin-pos-4 { left: 82%; }
 
-    /* Right pane: Margin discussion */
-    .reader-margin-pane {
-      padding: 32px;
+    /* Reading Canvas */
+    .reader-body-well {
+      padding: 24px 20px 16px;
+      font-family: var(--font-serif);
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--ink);
+    }
+    .reader-chapter-label {
+      font-size: 12px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--ink-tertiary);
+      margin-bottom: 16px;
+    }
+    .passage-para {
+      margin-bottom: 14px;
+    }
+    .highlight-active-span {
+      background-color: rgba(180, 83, 9, 0.15);
+      border-bottom: 2px solid var(--accent);
+      padding: 2px 2px;
+      border-radius: 2px;
+    }
+    .inline-margin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
       background-color: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-sans);
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-left: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      vertical-align: middle;
+      cursor: pointer;
+    }
+
+    /* PassageSelectionContextMenu (Exact Flutter port) */
+    .passage-context-menu {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background-color: var(--surface);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin: 14px 0 16px;
+    }
+    .pcm-header {
+      background-color: rgba(180, 83, 9, 0.08);
+      border-left: 4px solid var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 12px;
+    }
+    .pcm-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .pcm-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      font-family: var(--font-sans);
+    }
+    .pcm-adjust-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pcm-adjust-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 7px;
+      background-color: rgba(180, 83, 9, 0.12);
+      border: 1px solid rgba(180, 83, 9, 0.28);
+      border-radius: 12px;
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      font-family: var(--font-sans);
+      cursor: pointer;
+    }
+    .pcm-close-btn {
+      background: none;
+      border: none;
+      color: var(--ink-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      padding: 2px 4px;
+      line-height: 1;
+    }
+    .pcm-quote-text {
+      font-style: italic;
+      font-size: 12px;
+      line-height: 1.35;
+      color: var(--ink);
+      font-family: var(--font-serif);
+    }
+    .pcm-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 8px 6px;
+      background-color: var(--surface);
+    }
+    .pcm-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      padding: 4px 6px;
+    }
+    .pcm-action-btn.primary {
+      color: var(--accent);
+    }
+    .pcm-divider {
+      width: 1px;
+      height: 16px;
+      background-color: var(--border);
+    }
+
+    /* Mobile Reader Bottom Footer */
+    .reader-phone-footer {
+      padding: 10px 16px 14px;
+      border-top: 1px solid var(--border);
+      background-color: var(--surface);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .reader-footer-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--ink-tertiary);
+      font-family: var(--font-sans);
+    }
+    .home-indicator {
+      width: 90px;
+      height: 4px;
+      background-color: #CBD5E1;
+      border-radius: 2px;
+      margin: 0 auto;
+    }
+
+    /* Companion Pane (Right Side on Desktop): Margin Thread */
+    .reader-companion-pane {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -382,6 +554,7 @@ export class AppController {
       line-height: 1.5;
       color: var(--ink-secondary);
       margin-bottom: 24px;
+      border-left: 3px solid var(--accent);
     }
     .thread-entry {
       border: 1px solid var(--border);
@@ -445,7 +618,15 @@ export class AppController {
       font-weight: 600;
       cursor: pointer;
     }
-
+    .cfi-callout-footer {
+      margin-top: 20px;
+      padding: 12px 14px;
+      background-color: var(--surface-subtle);
+      border-radius: var(--radius);
+      font-size: 12px;
+      color: var(--ink-secondary);
+      line-height: 1.4;
+    }
     /* Feature sections: direct two-column layout */
     .feature-list {
       display: flex;
@@ -655,54 +836,126 @@ export class AppController {
       </div>
     </section>
 
-    <!-- Tablet reader preview -->
-    <section id="reader" class="reader-mockup">
-      <div class="reader-text-pane">
-        <div>
-          <div class="reader-meta-bar">
-            <span>Dune by Frank Herbert</span>
-            <span>Chapter 4, Page 84</span>
-          </div>
-
-          <div class="reader-chapter-title">The Litany Against Fear</div>
-
-          <div class="book-passage">
-            <p>
-              The room grew quiet as the gom jabbar remained steady at his neck. Paul remembered the old proverb whispered in the deep stone halls of Castle Caladan.
-            </p>
-            <p>
-              <span class="highlighted-text">I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration. I will face my fear. I will permit it to pass over me and through me.</span>
-            </p>
-            <div class="reader-action-toolbar">
-              <button class="toolbar-chip">Start discussion (8)</button>
-              <button class="toolbar-chip secondary">Save quote</button>
-              <button class="toolbar-chip secondary">Highlight</button>
-            </div>
-            <p>
-              And when it has gone past I will turn the inner eye to see its path. Where the fear has gone there will be nothing. Only I will remain.
-            </p>
-          </div>
+    <!-- Mobile Reader & Passage Selection Preview -->
+    <section id="reader" class="reader-showcase-container">
+      <!-- Authentic Mobile Phone Frame -->
+      <div class="phone-frame">
+        <!-- Phone Status Bar -->
+        <div class="phone-notch-bar">
+          <span>9:41</span>
+          <div class="notch-island"></div>
+          <span>100%</span>
         </div>
 
-        <div class="scrubber-module">
-          <div class="scrubber-header">
-            <span>Chapter 4 progress</span>
-            <span>4 members currently active</span>
+        <!-- Mobile Top App Bar -->
+        <div class="reader-top-bar">
+          <button class="reader-bar-btn" title="Table of contents" aria-label="Table of contents">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div class="reader-bar-center">
+            <div class="reader-bar-title">Dune</div>
+            <div class="reader-bar-community">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>The Sci-Fi Collective &#9662;</span>
+            </div>
           </div>
-          <div class="scrubber-line">
-            <div class="scrubber-progress"></div>
-            <div class="scrubber-pin pin-a" title="Marcus">M</div>
-            <div class="scrubber-pin pin-b" title="Elena">E</div>
-            <div class="scrubber-pin pin-user" title="You (Page 84)">You</div>
-            <div class="scrubber-pin pin-c" title="Priya">P</div>
+          <button class="reader-bar-btn" title="Reading settings" aria-label="Reading settings">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </button>
+        </div>
+
+        <!-- Ambient Progress Bar -->
+        <div class="ambient-progress-track" title="Real-time co-reading timeline">
+          <div class="ambient-fill"></div>
+          <div class="ambient-pin pin-pos-1" title="Marcus (24%)">M</div>
+          <div class="ambient-pin pin-pos-2" title="Elena (45%)">E</div>
+          <div class="ambient-pin pin-active pin-pos-3" title="You (Page 84 • 64%)">You</div>
+          <div class="ambient-pin pin-pos-4" title="Priya (82%)">P</div>
+        </div>
+
+        <!-- Reading Canvas Surface -->
+        <div class="reader-body-well">
+          <div class="reader-chapter-label">Chapter IV &bull; Castle Caladan</div>
+
+          <p class="passage-para">
+            The room grew quiet as the gom jabbar remained steady at his neck. Paul remembered the old proverb whispered in the deep stone halls of Castle Caladan:
+          </p>
+
+          <p class="passage-para">
+            <mark class="highlight-active-span">"I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration. I will face my fear. I will permit it to pass over me and through me."</mark>
+            <span class="inline-margin-badge" title="8 active comments on this sentence">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              8
+            </span>
+          </p>
+
+          <!-- Floating PassageSelectionContextMenu (Exact App Match) -->
+          <div class="passage-context-menu">
+            <div class="pcm-header">
+              <div class="pcm-top-row">
+                <div class="pcm-tag">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="14" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+                  <span>SELECTED PASSAGE</span>
+                </div>
+                <div class="pcm-adjust-group">
+                  <button class="pcm-adjust-chip" title="Shorten selection">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Shorten</span>
+                  </button>
+                  <button class="pcm-adjust-chip" title="Expand selection">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Expand</span>
+                  </button>
+                  <button class="pcm-close-btn" aria-label="Dismiss">&times;</button>
+                </div>
+              </div>
+              <div class="pcm-quote-text">
+                "I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration..."
+              </div>
+            </div>
+            <div class="pcm-toolbar">
+              <button class="pcm-action-btn primary" title="Start a passage thread">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="12" y1="8" x2="12" y2="12"></line><line x1="10" y1="10" x2="14" y2="10"></line></svg>
+                <span>Start Thread</span>
+              </button>
+              <span class="pcm-divider"></span>
+              <button class="pcm-action-btn" title="Rate this passage">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span>Rate</span>
+              </button>
+              <span class="pcm-divider"></span>
+              <button class="pcm-action-btn" title="Save quote">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path></svg>
+                <span>Save</span>
+              </button>
+              <span class="pcm-divider"></span>
+              <button class="pcm-action-btn" title="Highlight text">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h3l6-6"></path><path d="m22 12-4.6 4.6a2.78 2.78 0 0 1-3.9 0l-4.1-4.1a2.78 2.78 0 0 1 0-3.9L14 4"></path></svg>
+                <span>Highlight</span>
+              </button>
+            </div>
           </div>
+
+          <p class="passage-para">
+            And when it has gone past I will turn the inner eye to see its path. Where the fear has gone there will be nothing. Only I will remain.
+          </p>
+        </div>
+
+        <!-- Phone Reader Bottom Bar -->
+        <div class="reader-phone-footer">
+          <div class="reader-footer-info">
+            <span>Chapter IV &bull; Page 84</span>
+            <span>64% completed</span>
+          </div>
+          <div class="home-indicator"></div>
         </div>
       </div>
 
-      <div class="reader-margin-pane">
+      <!-- Right Companion Column: In-Margin Discussion Drawer -->
+      <div class="reader-companion-pane">
         <div>
           <div class="margin-header">
-            <div class="margin-label">Margin thread</div>
+            <div class="margin-label">Active Margin Thread &bull; The Sci-Fi Collective</div>
             <div class="margin-title">The Litany as Psychological Anchor</div>
           </div>
 
@@ -738,9 +991,14 @@ export class AppController {
           </div>
         </div>
 
-        <div class="reply-form">
-          <input type="text" class="reply-input" value="It foreshadows the desert trials in part two." readonly>
-          <button class="reply-submit">Send</button>
+        <div>
+          <div class="reply-form">
+            <input type="text" class="reply-input" value="It foreshadows the desert trials in part two." readonly>
+            <button class="reply-submit">Send</button>
+          </div>
+          <div class="cfi-callout-footer">
+            <strong>Sub-paragraph coordinate fidelity:</strong> Threads and highlights are anchored using EPUB CFI offsets. Everyone in the club sees identical passage highlights regardless of device or screen resolution.
+          </div>
         </div>
       </div>
     </section>
