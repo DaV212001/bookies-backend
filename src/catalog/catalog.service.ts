@@ -277,23 +277,43 @@ export class CatalogService {
       return { stream: fs.createReadStream(localPath), filename };
     }
 
-    // 2. Check direct downloadUrl if available (strictly avoiding recursive self-fetch)
-    const isSelfUrl =
-      !book.downloadUrl ||
-      book.downloadUrl.includes(`/catalog/${catalogBookId}/download`) ||
-      book.downloadUrl.includes('/api/v1/catalog') ||
-      book.downloadUrl.includes('localhost:3000') ||
-      book.downloadUrl.includes('127.0.0.1');
-
-    if (book.downloadUrl && !isSelfUrl) {
+    // 2. Check direct downloadUrl if available with strict SSRF filtering
+    if (book.downloadUrl) {
       try {
-        const streamResp = await axios.get(book.downloadUrl, {
-          responseType: 'stream',
-          timeout: 15000,
-        });
-        return { stream: streamResp.data, filename };
-      } catch (err) {
-        this.logger.warn(`Failed to stream from downloadUrl: ${err.message}`);
+        const parsedUrl = new URL(book.downloadUrl);
+        const protocol = parsedUrl.protocol.toLowerCase();
+        if (protocol !== 'http:' && protocol !== 'https:') {
+          throw new Error('Unsupported protocol');
+        }
+
+        const hostname = parsedUrl.hostname.toLowerCase();
+
+        // Deny loopback, link-local, private subnets, cloud metadata
+        const isBlockedHost =
+          hostname === 'localhost' ||
+          hostname === '127.0.0.1' ||
+          hostname === '::1' ||
+          hostname === '0.0.0.0' ||
+          hostname === '169.254.169.254' ||
+          hostname.startsWith('10.') ||
+          hostname.startsWith('192.168.') ||
+          /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname) ||
+          hostname.endsWith('.internal') ||
+          hostname.endsWith('.local') ||
+          parsedUrl.pathname.includes(`/catalog/${catalogBookId}/download`);
+
+        if (!isBlockedHost) {
+          const streamResp = await axios.get(book.downloadUrl, {
+            responseType: 'stream',
+            timeout: 15000,
+            maxRedirects: 3,
+          });
+          return { stream: streamResp.data, filename };
+        } else {
+          this.logger.warn(`Blocked potential SSRF attempt to host: ${hostname}`);
+        }
+      } catch (err: any) {
+        this.logger.warn(`Failed or blocked stream from downloadUrl: ${err.message}`);
       }
     }
 

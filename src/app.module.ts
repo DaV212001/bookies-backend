@@ -6,6 +6,7 @@ import { DiscussionsModule } from './discussions/discussions.module';
 import { LiveSessionsModule } from './live-sessions/live-sessions.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { ReadingProgressModule } from './reading-progress/reading-progress.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -17,5 +18,6 @@ import { ReadingProgressModule } from './reading-progress/reading-progress.modul
     CatalogModule,
     ReadingProgressModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

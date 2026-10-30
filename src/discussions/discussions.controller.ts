@@ -26,6 +26,7 @@ export class DiscussionsController {
     return this.discussionsService.create(req.user.id, body);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post(':id/upvote')
   async upvote(@Param('id') id: string) {
     return this.discussionsService.upvote(id);

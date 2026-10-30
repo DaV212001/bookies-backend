@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -34,6 +34,15 @@ export class DiscussionsService {
   }
 
   async create(userId: string, dto: any) {
+    if (dto.communityId) {
+      const member = await this.prisma.communityMember.findUnique({
+        where: { communityId_userId: { communityId: dto.communityId, userId } },
+      });
+      if (member && (member.status === 'banned' || member.status === 'restricted')) {
+        throw new ForbiddenException('Your membership in this community is restricted or banned');
+      }
+    }
+
     return this.prisma.discussion.create({
       data: {
         highlightId: dto.highlightId || 'general',
@@ -82,6 +91,20 @@ export class DiscussionsService {
   }
 
   async addMessage(userId: string, threadId: string, dto: any) {
+    const discussion = await this.prisma.discussion.findUnique({
+      where: { id: threadId },
+    });
+    if (!discussion) throw new NotFoundException('Discussion thread not found');
+
+    if (discussion.communityId) {
+      const member = await this.prisma.communityMember.findUnique({
+        where: { communityId_userId: { communityId: discussion.communityId, userId } },
+      });
+      if (member && (member.status === 'banned' || member.status === 'restricted')) {
+        throw new ForbiddenException('You cannot post messages in this community');
+      }
+    }
+
     return this.prisma.chatMessage.create({
       data: {
         threadId,

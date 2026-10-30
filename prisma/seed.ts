@@ -4,6 +4,10 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.NODE_ENV === 'production' && process.env.FORCE_SEED !== 'true') {
+    console.log('⚠️ Skipping database seeding in production environment.');
+    return;
+  }
   console.log('🌱 Seeding database with contemporary book club favorites...');
 
   const passwordHash = await bcrypt.hash('password123', 10);

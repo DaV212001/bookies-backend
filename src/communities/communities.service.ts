@@ -65,6 +65,24 @@ export class CommunitiesService {
 
     // Handle roster cloning if requested
     if (dto.importMembersFromCommunityId) {
+      const sourceMembership = await this.prisma.communityMember.findUnique({
+        where: {
+          communityId_userId: {
+            communityId: dto.importMembersFromCommunityId,
+            userId,
+          },
+        },
+      });
+
+      if (
+        !sourceMembership ||
+        (sourceMembership.role !== 'creator' && sourceMembership.role !== 'admin')
+      ) {
+        throw new ForbiddenException(
+          'You can only import member rosters from communities where you are an admin or creator',
+        );
+      }
+
       const sourceMembers = await this.prisma.communityMember.findMany({
         where: {
           communityId: dto.importMembersFromCommunityId,

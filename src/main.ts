@@ -8,25 +8,35 @@ async function bootstrap() {
 
   // Enable CORS for Flutter mobile/web
   app.enableCors({
-    origin: '*',
+    origin: (origin, callback) => {
+      // Allow mobile apps, native clients, and web requests with credentials
+      callback(null, true);
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
   // Global API routing prefix: /api/v1
-  app.setGlobalPrefix('api/v1');
+  // Exclude root, home, privacy, and health for direct browser access, Google OAuth branding & UptimeRobot
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['/', 'home', 'privacy', 'health'],
+  });
 
-  // Input validation
+  // Input validation: whitelist properties and transform types
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: false,
+      whitelist: true,
       transform: true,
+      forbidUnknownValues: true,
     }),
   );
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  logger.log(`🚀 Bookies NestJS backend running at http://localhost:${port}/api/v1`);
+  logger.log(`🚀 Bookies NestJS backend running at http://localhost:${port}`);
+  logger.log(`📄 Landing page: http://localhost:${port}/home`);
+  logger.log(`🔒 Privacy policy: http://localhost:${port}/privacy`);
+  logger.log(`💓 Health check: http://localhost:${port}/health`);
 }
 bootstrap();

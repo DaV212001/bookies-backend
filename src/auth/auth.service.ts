@@ -87,37 +87,29 @@ export class AuthService {
   }
 
   async googleLogin(dto: GoogleLoginDto) {
-    let email = dto.email;
-    let displayName = dto.displayName;
-    let avatarUrl = dto.avatarUrl;
-    let googleId = dto.googleId;
-
-    if (dto.idToken) {
-      try {
-        const ticket = await this.googleClient.verifyIdToken({
-          idToken: dto.idToken,
-          audience: process.env.GOOGLE_CLIENT_ID || undefined,
-        });
-        const payload = ticket.getPayload();
-        if (payload) {
-          email = payload.email || email;
-          displayName = payload.name || displayName;
-          avatarUrl = payload.picture || avatarUrl;
-          googleId = payload.sub || googleId;
-        }
-      } catch (err) {
-        // If Google token verification fails and we don't have direct claims, reject
-        if (!email) {
-          throw new UnauthorizedException('Invalid Google ID token: ' + err.message);
-        }
-      }
+    if (!dto.idToken) {
+      throw new UnauthorizedException('Google ID token is required');
     }
 
-    if (!email) {
-      throw new UnauthorizedException('Google authentication failed: Email is required');
+    let payload;
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: dto.idToken,
+        audience: process.env.GOOGLE_CLIENT_ID || undefined,
+      });
+      payload = ticket.getPayload();
+    } catch (err: any) {
+      throw new UnauthorizedException('Invalid Google ID token: ' + (err?.message || 'Verification failed'));
     }
 
-    email = email.toLowerCase();
+    if (!payload || !payload.email) {
+      throw new UnauthorizedException('Google authentication failed: Email claim missing from ID token');
+    }
+
+    const email = payload.email.toLowerCase();
+    const displayName = payload.name || dto.displayName || 'Reader';
+    const avatarUrl = payload.picture || dto.avatarUrl;
+    const googleId = payload.sub;
 
     // Check if user already exists by googleId or email
     let user = await this.prisma.user.findFirst({
@@ -136,7 +128,7 @@ export class AuthService {
         data: {
           googleId: user.googleId || googleId,
           avatarUrl: user.avatarUrl || avatarUrl,
-          displayName: user.displayName || displayName || 'Reader',
+          displayName: user.displayName || displayName,
         },
       });
     } else {
@@ -149,7 +141,7 @@ export class AuthService {
         data: {
           email,
           username,
-          displayName: displayName || baseUsername,
+          displayName,
           avatarUrl,
           googleId,
         },
@@ -171,11 +163,15 @@ export class AuthService {
   }
 
   private generateToken(userId: string, email: string): string {
+    const secret = process.env.JWT_SECRET;
+    if (!secret && process.env.NODE_ENV === 'production') {
+      throw new Error('FATAL: JWT_SECRET environment variable is not defined in production');
+    }
     return this.jwtService.sign(
       { sub: userId, email },
       {
-        secret: process.env.JWT_SECRET || 'super-secret-bookies-jwt-key-2026-change-in-prod',
-        expiresIn: '30d',
+        secret: secret || 'super-secret-bookies-jwt-key-2026-change-in-prod',
+        expiresIn: '7d',
       },
     );
   }

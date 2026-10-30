@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -16,6 +16,22 @@ export class LiveSessionsService {
   }
 
   async startSession(userId: string, dto: any) {
+    // Verify caller is an active member or admin/creator of the community
+    const membership = await this.prisma.communityMember.findUnique({
+      where: {
+        communityId_userId: {
+          communityId: dto.communityId,
+          userId,
+        },
+      },
+    });
+
+    if (!membership || membership.status === 'banned' || membership.status === 'restricted') {
+      throw new ForbiddenException(
+        'You do not have permission to start a live reading session in this community',
+      );
+    }
+
     // End any existing active session for this community
     await this.prisma.liveReadingSession.updateMany({
       where: { communityId: dto.communityId, isActive: true },
@@ -41,7 +57,27 @@ export class LiveSessionsService {
     });
   }
 
-  async endSession(communityId: string) {
+  async endSession(communityId: string, userId: string) {
+    const session = await this.getActiveSession(communityId);
+    if (!session) return { count: 0 };
+
+    if (session.hostId !== userId) {
+      const membership = await this.prisma.communityMember.findUnique({
+        where: {
+          communityId_userId: {
+            communityId,
+            userId,
+          },
+        },
+      });
+
+      if (!membership || (membership.role !== 'creator' && membership.role !== 'admin')) {
+        throw new ForbiddenException(
+          'Only the session host or community admins can end this live reading session',
+        );
+      }
+    }
+
     return this.prisma.liveReadingSession.updateMany({
       where: { communityId, isActive: true },
       data: { isActive: false, endedAt: new Date() },

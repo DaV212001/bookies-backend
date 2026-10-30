@@ -26,8 +26,8 @@ export class LiveSessionsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('end')
-  async endSession(@Param('communityId') communityId: string) {
-    return this.liveSessionsService.endSession(communityId);
+  async endSession(@Param('communityId') communityId: string, @Req() req: any) {
+    return this.liveSessionsService.endSession(communityId, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
