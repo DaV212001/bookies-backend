@@ -74,4 +74,10 @@ describe('AppController', () => {
       expect(html).not.toContain('/health');
     });
   });
+  describe('getReaderPreviewImage', () => {
+    it('should return a StreamableFile for the reader screenshot', () => {
+      const file = controller.getReaderPreviewImage();
+      expect(file).toBeDefined();
+    });
+  });
 });

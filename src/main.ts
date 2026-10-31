@@ -19,7 +19,7 @@ async function bootstrap() {
   // Global API routing prefix: /api/v1
   // Exclude root, home, privacy, terms, and health for direct browser access, Google OAuth branding & UptimeRobot
   app.setGlobalPrefix('api/v1', {
-    exclude: ['/', 'home', 'privacy', 'terms', 'health'],
+    exclude: ['/', 'home', 'privacy', 'terms', 'health', 'reader-preview.png'],
   });
 
   // Input validation: whitelist properties and transform types
