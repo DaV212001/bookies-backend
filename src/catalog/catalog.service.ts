@@ -277,7 +277,6 @@ export class CatalogService {
       const coverUrl = $(elem).find('img').first().attr('src') || '';
 
       if (rawTitle && sourceUrl) {
-        // Parse Title and Author (Often formatted as "[PDF] [EPUB] Title by Author Download")
         let cleanTitle = rawTitle.replace(/\[PDF\]|\[EPUB\]/gi, '').trim();
         cleanTitle = cleanTitle.replace(/Download$/i, '').trim();
 
@@ -304,6 +303,7 @@ export class CatalogService {
   /**
    * Resolve a book from database or dynamically run the scraper if missing from catalog.
    * Handles offline fallback IDs (e.g. 'fallback-secret-history'), slugs, or query terms.
+   * If book cannot be found in catalog or scraper, returns null.
    */
   async resolveOrScrapeBook(catalogBookId: string): Promise<any> {
     // 1. Check if ID directly matches a database record
@@ -367,35 +367,25 @@ export class CatalogService {
       });
     }
 
-    // 5. If still not in catalog, create a placeholder entry so the user is never stranded
-    const cleanTitle = query
-      .split(' ')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
-
-    const fallbackRecord = await this.prisma.catalogBook.create({
-      data: {
-        id: catalogBookId.startsWith('fallback-') ? undefined : catalogBookId,
-        title: cleanTitle,
-        author: 'Unknown Author',
-        description: `Discovered and imported via Bookies live catalog engine.`,
-        rating: 4.8,
-        activeReadersCount: 120,
-        genres: ['Fiction', 'Trending'],
-      },
-    });
-
-    return fallbackRecord;
+    // If not found in catalog or archives, return null (never substitute a fake record)
+    return null;
   }
 
   /**
-   * Scrape single book details & extract EPUB download form / link
+   * Scrape single book details & extract metadata
    */
   async getBookDetails(catalogBookId: string): Promise<any> {
     const book = await this.resolveOrScrapeBook(catalogBookId);
 
     if (!book) {
-      throw new HttpException('Catalog book not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'BookNotFound',
+          message: 'The requested book was not found in the catalog.',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     if (!book.sourceUrl) {
@@ -435,26 +425,33 @@ export class CatalogService {
   }
 
   /**
-   * Resolve and proxy/stream the EPUB file to the client.
-   * If remote file or stream is unavailable, safely streams default fallback EPUB.
+   * Resolve and proxy/stream the EPUB file to the client for this specific book.
+   * If the EPUB file cannot be found or downloaded, throws an honest 404 so the user
+   * is notified accurately rather than receiving an incorrect book.
    */
   async getEpubStream(catalogBookId: string): Promise<{ stream: any; filename: string }> {
     const book = await this.resolveOrScrapeBook(catalogBookId);
 
     if (!book) {
-      throw new HttpException('Catalog book not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          error: 'BookNotFound',
+          message: 'The requested book was not found in the catalog.',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     const filename = `${book.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.epub`;
 
-    // 1. Check local storage folder for pre-ingested or cached EPUB
+    // 1. Check local storage folder for pre-ingested or cached EPUB of this specific book
     const localPath = path.join(process.cwd(), 'storage', 'epubs', `${book.id}.epub`);
     if (fs.existsSync(localPath)) {
       this.logger.log(`Serving EPUB from local disk cache: ${localPath}`);
       return { stream: fs.createReadStream(localPath), filename };
     }
 
-    // Also check if catalogBookId was the filename on disk
     const directLocalPath = path.join(process.cwd(), 'storage', 'epubs', `${catalogBookId}.epub`);
     if (fs.existsSync(directLocalPath)) {
       this.logger.log(`Serving EPUB from direct local disk: ${directLocalPath}`);
@@ -507,13 +504,16 @@ export class CatalogService {
       }
     }
 
-    // 3. Fallback to default sample EPUB so download never 404s
-    const defaultPath = path.join(process.cwd(), 'storage', 'epubs', 'default.epub');
-    if (fs.existsSync(defaultPath)) {
-      this.logger.log(`Serving default fallback EPUB for: "${book.title}"`);
-      return { stream: fs.createReadStream(defaultPath), filename };
-    }
-
-    throw new HttpException('EPUB file not found on disk or network', HttpStatus.NOT_FOUND);
+    // 3. Do NOT substitute the wrong book. Notify the client honestly that this specific book is unavailable.
+    this.logger.warn(`EPUB download file currently unavailable for "${book.title}" (id: ${book.id})`);
+    throw new HttpException(
+      {
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'EpubUnavailable',
+        message: `“${book.title}” is currently unavailable for direct download.`,
+        bookTitle: book.title,
+      },
+      HttpStatus.NOT_FOUND,
+    );
   }
 }
