@@ -1,6 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/node';
 import { AppModule } from './app.module';
+
+// Initialize Sentry for backend exception & performance tracking
+Sentry.init({
+  dsn:
+    process.env.SENTRY_DSN ||
+    'https://39db1e6fdf0b5879e1038fbd16953344@o4512373381398608.ingest.de.sentry.io/4512373381398608',
+  environment: process.env.NODE_ENV || 'production',
+  tracesSampleRate: 1.0,
+});
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');

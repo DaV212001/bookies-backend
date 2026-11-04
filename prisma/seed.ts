@@ -4,8 +4,9 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  if (process.env.NODE_ENV === 'production' && process.env.FORCE_SEED !== 'true') {
-    console.log('⚠️ Skipping database seeding in production environment.');
+  const existingCount = await prisma.catalogBook.count();
+  if (existingCount > 0 && process.env.FORCE_SEED !== 'true') {
+    console.log(`Database already has ${existingCount} catalog books. Skipping seed.`);
     return;
   }
   console.log('🌱 Seeding database with contemporary book club favorites...');
