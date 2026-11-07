@@ -77,6 +77,7 @@ export class AppController {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="xlDdjrBSm_UQdcniKjd35Ymgo5fbNfpd_ToTwbjo7TA" />
   <title>Bookies: Social Reading and Book Clubs</title>
   <meta name="description" content="Bookies connects readers through synchronized timelines, in-margin passage discussions, quote cards, and shared reading for book clubs.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -815,6 +816,7 @@ export class AppController {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="xlDdjrBSm_UQdcniKjd35Ymgo5fbNfpd_ToTwbjo7TA" />
   <title>Privacy Policy: Bookies</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
