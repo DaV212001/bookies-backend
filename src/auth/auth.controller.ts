@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Patch, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, UseGuards, Req, Query, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
@@ -30,6 +30,20 @@ export class AuthController {
   async getProfile(@Req() req: any) {
     return req.user;
   }
+
+  @Get('check-username')
+  async checkUsername(
+    @Query('username') username: string,
+    @Headers('authorization') authHeader?: string,
+  ) {
+    let userId: string | undefined;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      userId = this.authService.decodeTokenUserId(token);
+    }
+    return this.authService.checkUsernameAvailability(username, userId);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Patch('profile')
   async updateProfile(@Req() req: any, @Body() dto: UpdateProfileDto) {

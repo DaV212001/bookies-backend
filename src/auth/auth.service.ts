@@ -6,8 +6,44 @@ import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '../prisma/prisma.service';
 import { GoogleLoginDto } from './dto/google-login.dto';
 
+
+class UsernameAvailabilityCache {
+  private cache = new Map<string, { available: boolean; timestamp: number }>();
+  private readonly maxEntries = 5000;
+  private readonly ttlMs = 60 * 1000; // 60 seconds
+
+  get(username: string): boolean | undefined {
+    const entry = this.cache.get(username);
+    if (!entry) return undefined;
+    if (Date.now() - entry.timestamp > this.ttlMs) {
+      this.cache.delete(username);
+      return undefined;
+    }
+    return entry.available;
+  }
+
+  set(username: string, available: boolean) {
+    if (this.cache.size >= this.maxEntries) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey) this.cache.delete(oldestKey);
+    }
+    this.cache.set(username, { available, timestamp: Date.now() });
+  }
+
+  invalidate(username: string) {
+    this.cache.delete(username.toLowerCase());
+  }
+}
+
+const RESERVED_USERNAMES = new Set([
+  'admin', 'administrator', 'root', 'support', 'help', 'api', 'bookies',
+  'system', 'mod', 'moderator', 'official', 'null', 'undefined', 'anonymous',
+  'everyone', 'here', 'channel', 'service', 'guest', 'bot', 'security',
+]);
+
 @Injectable()
 export class AuthService {
+  private readonly availabilityCache = new UsernameAvailabilityCache();
   private readonly googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
   constructor(
@@ -164,6 +200,97 @@ export class AuthService {
   }
 
 
+
+  async checkUsernameAvailability(rawUsername: string, currentUserId?: string): Promise<{
+    available: boolean;
+    username: string;
+    reason?: 'INVALID_FORMAT' | 'RESERVED' | 'TAKEN' | 'AVAILABLE' | 'CURRENT_USER';
+    message: string;
+  }> {
+    if (!rawUsername) {
+      return {
+        available: false,
+        username: '',
+        reason: 'INVALID_FORMAT',
+        message: 'Username cannot be empty',
+      };
+    }
+
+    const clean = rawUsername.trim().toLowerCase();
+
+    // 1. Regex validation (3-30 characters, alphanumeric & underscore only)
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(clean)) {
+      return {
+        available: false,
+        username: clean,
+        reason: 'INVALID_FORMAT',
+        message: 'Must be 3–30 characters, alphanumeric and underscores only',
+      };
+    }
+
+    // 2. Reserved system keywords (O(1) in-memory check)
+    if (RESERVED_USERNAMES.has(clean)) {
+      return {
+        available: false,
+        username: clean,
+        reason: 'RESERVED',
+        message: `@${clean} is a reserved system handle`,
+      };
+    }
+
+    // 3. User's own username (if authenticated)
+    if (currentUserId) {
+      const current = await this.prisma.user.findUnique({
+        where: { id: currentUserId },
+        select: { username: true },
+      });
+      if (current && current.username === clean) {
+        return {
+          available: true,
+          username: clean,
+          reason: 'CURRENT_USER',
+          message: 'Current handle',
+        };
+      }
+    }
+
+    // 4. In-Memory LRU Cache Check (O(1), zero DB overhead)
+    const cached = this.availabilityCache.get(clean);
+    if (cached !== undefined) {
+      return {
+        available: cached,
+        username: clean,
+        reason: cached ? 'AVAILABLE' : 'TAKEN',
+        message: cached ? `@${clean} is available` : `@${clean} is already taken`,
+      };
+    }
+
+    // 5. High-efficiency Index-Only Scan in PostgreSQL (O(log N) B-Tree lookup)
+    const existing = await this.prisma.user.findFirst({
+      where: { username: clean },
+      select: { id: true },
+    });
+
+    const isAvailable = !existing;
+    this.availabilityCache.set(clean, isAvailable);
+
+    return {
+      available: isAvailable,
+      username: clean,
+      reason: isAvailable ? 'AVAILABLE' : 'TAKEN',
+      message: isAvailable ? `@${clean} is available` : `@${clean} is already taken`,
+    };
+  }
+
+  decodeTokenUserId(token: string): string | undefined {
+    try {
+      const decoded = this.jwtService.decode(token) as any;
+      return decoded?.sub;
+    } catch {
+      return undefined;
+    }
+  }
+
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const existing = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -196,6 +323,7 @@ export class AuthService {
           throw new ConflictException(`Username @${cleanUsername} is already taken`);
         }
         dataToUpdate.username = cleanUsername;
+        this.availabilityCache.invalidate(cleanUsername);
       }
     }
 
