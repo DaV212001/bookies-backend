@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -28,5 +29,10 @@ export class AuthController {
   @Get('me')
   async getProfile(@Req() req: any) {
     return req.user;
+  }
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  async updateProfile(@Req() req: any, @Body() dto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user.id, dto);
   }
 }

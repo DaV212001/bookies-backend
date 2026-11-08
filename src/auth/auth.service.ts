@@ -1,4 +1,5 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
@@ -159,6 +160,60 @@ export class AuthService {
         avatarUrl: user.avatarUrl,
       },
       accessToken: token,
+    };
+  }
+
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const existing = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('User not found');
+    }
+
+    const dataToUpdate: {
+      displayName?: string;
+      username?: string;
+      avatarUrl?: string | null;
+    } = {};
+
+    if (dto.displayName !== undefined && dto.displayName.trim().length > 0) {
+      dataToUpdate.displayName = dto.displayName.trim();
+    }
+
+    if (dto.username !== undefined && dto.username.trim().length > 0) {
+      const cleanUsername = dto.username.trim().toLowerCase();
+      if (cleanUsername !== existing.username) {
+        const taken = await this.prisma.user.findFirst({
+          where: {
+            username: cleanUsername,
+            id: { not: userId },
+          },
+        });
+        if (taken) {
+          throw new ConflictException(`Username @${cleanUsername} is already taken`);
+        }
+        dataToUpdate.username = cleanUsername;
+      }
+    }
+
+    if (dto.avatarUrl !== undefined) {
+      dataToUpdate.avatarUrl = dto.avatarUrl.trim() || null;
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: dataToUpdate,
+    });
+
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      username: updatedUser.username,
+      displayName: updatedUser.displayName,
+      avatarUrl: updatedUser.avatarUrl,
     };
   }
 
